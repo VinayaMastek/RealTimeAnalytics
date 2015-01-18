@@ -1,0 +1,35 @@
+-- Table: events
+
+DROP TABLE IF EXISTS events;
+
+CREATE TABLE events
+(
+  event character varying(20),
+  payload character varying(1000),
+  "timestamp" character varying(30),
+  sessionid character varying(100)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE events
+  OWNER TO postgres;
+
+  
+alter table events add column event_id serial;  
+alter table events add column status character varying(1) default 'N';
+
+
+ROP TABLE IF EXISTS logtable;
+
+CREATE TABLE logtable
+(
+  id serial,
+  description character varying(1000)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE logtable
+  OWNER TO postgres;
+  
