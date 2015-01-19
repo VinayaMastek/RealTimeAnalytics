@@ -14,6 +14,10 @@ import java.util.Map;
 import net.sf.json.JSONObject;
 
 public class EmailNameChangeBolt extends BaseRichBolt {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private OutputCollector collector;
 	private HashMap<String, String> emailName = null;
 	private String session = "";
@@ -55,7 +59,7 @@ public class EmailNameChangeBolt extends BaseRichBolt {
 					+ value;
 
 			this.collector
-					.emit(new Values(session, "EmailNameChange", desc, 0L));
+					.emit(new Values(session, "EmailNameChange", desc, 0L,"NOACTION"));
 		}
 	}
 
@@ -65,7 +69,7 @@ public class EmailNameChangeBolt extends BaseRichBolt {
 	}
 
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-		declarer.declare(new Fields("session", "eventType", "desc", "count"));
+		declarer.declare(new Fields("session", "eventType", "desc", "count","action"));
 	}
 
 	@Override

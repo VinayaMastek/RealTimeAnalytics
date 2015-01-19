@@ -71,7 +71,7 @@ public class EventPostController {
 	// @Consumes(MediaType.APPLICATION_JSON)
 	public JSONObject OpenTran(@Context HttpServletResponse servletResponse) {
 		JSONObject outtran = new JSONObject();
-
+		System.out.println("Ha Ha Ha.... I am first");
 		int tranid = openTran();
 
 		outtran.put("tranid", tranid);
@@ -136,7 +136,9 @@ public class EventPostController {
 		JSONObject eventData = JSONObject.fromObject(eData);
 		Session s = SessionRegistry.getTransaction((String) eventData
 				.get("tran"));
-		echoTextMessage(s, eventData.getString("msg"), true);
+		//echoTextMessage(s, eventData.getString("msg"), true);
+		echoTextMessage(s, eventData.toString(), true);
+
 		System.out.println("Inside CountUpdt");
 
 	}
@@ -147,7 +149,7 @@ public class EventPostController {
 	public void echoTextMessage(Session session, String msg, boolean last) {
 		try {
 			if (session.isOpen()) {
-				session.getBasicRemote().sendText(msg + "Changed in server",
+				session.getBasicRemote().sendText(msg ,
 						last);
 			}
 		} catch (IOException e) {

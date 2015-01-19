@@ -12,22 +12,27 @@ public class EventCountTopology {
 
     private static final String EVENT_SPOUT_ID = "event-spout";
     private static final String EMIT_BOLT_ID = "emit-bolt";
+    
     private static final String COUNT_BOLT_ID = "count-bolt";
     private static final String EMAILNAMECHANGE_BOLT_ID = "email-name-change-bolt";
-    
     private static final String TOOMANYNAMECHANGE_BOLT_ID = "too-many-name-change-bolt";
     
     private static final String POSTGRESLOG_BOLT_ID = "report-bolt";
-    private static final String EMAIL_BOLT_ID = "email-bolt";
-    
     private static final String POSTGRESLOG_BOLT_ID_EVNT2 = "report-bolt2";
+    private static final String POSTGRESLOG_BOLT_ID_EVNT3 = "report-bolt3";
+    
+    private static final String EMAIL_BOLT_ID = "email-bolt";
     private static final String EMAIL_BOLT_ID_EVNT2 = "email-bolt2";
+    private static final String EMAIL_BOLT_ID_EVNT3 = "email-bolt3";
+    
     private static final String STAT_BOLT_ID = "stat_blot";
     private static final String STAT_BOLT_ID_EVTN2 = "stat_blot2";
+        private static final String STAT_BOLT_ID_EVTN3 = "stat_blot3";
+
     
     private static final String TOPOLOGY_NAME = "event-count-topology";
 
-    public final static String WEBSERVER = "http://localhost:8080/RealAnalyticsUI/rest/events/countUpdt";
+    public final static String WEBSERVER = "http://localhost:8080/EventProcessingAPI/rest/events/countUpdt";
 	public final static long DOWNLOAD_TIME = 100;
 	
     
@@ -39,16 +44,19 @@ public class EventCountTopology {
         TooManyNameChangeBolt tooManyNameChangeBolt = new TooManyNameChangeBolt();
         
         PostGresLogBolt pgBolt = new PostGresLogBolt();
-        EmailBolt emailBolt = new EmailBolt();
-        
         PostGresLogBolt emailChangePgBolt = new PostGresLogBolt();
+        PostGresLogBolt tooManyNameChangePgBolt = new PostGresLogBolt();
+        
+        EmailBolt emailBolt = new EmailBolt();
         EmailBolt emailChangeEmailBolt = new EmailBolt();
+        EmailBolt tooManyNameChangeEmailBolt = new EmailBolt();
+        
+        StatBolt sb = new StatBolt();
+        StatBolt sb2 = new StatBolt();
+        StatBolt sb3 = new StatBolt();
 
         EmitEventBolt emitEventBolt  = new EmitEventBolt();
 
-        StatBolt sb = new StatBolt();
-        StatBolt sb2 = new StatBolt();
-        
         TopologyBuilder builder = new TopologyBuilder();
         builder.setSpout(EVENT_SPOUT_ID, spout);
         
@@ -68,34 +76,36 @@ public class EventCountTopology {
         builder.setBolt(POSTGRESLOG_BOLT_ID, pgBolt)
                 .globalGrouping(COUNT_BOLT_ID);
 
-        builder.setBolt(EMAIL_BOLT_ID, emailBolt)
-        .globalGrouping(COUNT_BOLT_ID);
-
-        builder.setBolt(STAT_BOLT_ID, sb)
-        .globalGrouping(COUNT_BOLT_ID);
-
-        
         builder.setBolt(POSTGRESLOG_BOLT_ID_EVNT2, emailChangePgBolt)
         .globalGrouping(EMAILNAMECHANGE_BOLT_ID);
 
+        builder.setBolt(POSTGRESLOG_BOLT_ID_EVNT3, tooManyNameChangePgBolt)
+        .globalGrouping(TOOMANYNAMECHANGE_BOLT_ID);
+        
+        
+        builder.setBolt(EMAIL_BOLT_ID, emailBolt)
+        .globalGrouping(COUNT_BOLT_ID);
+        
         builder.setBolt(EMAIL_BOLT_ID_EVNT2, emailChangeEmailBolt)
         .globalGrouping(EMAILNAMECHANGE_BOLT_ID);
-        
-        
-        builder.setBolt(STAT_BOLT_ID_EVTN2, sb2)
-        .globalGrouping(EMAILNAMECHANGE_BOLT_ID);
+
+        builder.setBolt(EMAIL_BOLT_ID_EVNT3, tooManyNameChangeEmailBolt)
+        .globalGrouping(TOOMANYNAMECHANGE_BOLT_ID);
 
         
+        builder.setBolt(STAT_BOLT_ID, sb)
+        .globalGrouping(COUNT_BOLT_ID);      
+
+/*        builder.setBolt(STAT_BOLT_ID_EVTN2, sb2)
+        .globalGrouping(EMAILNAMECHANGE_BOLT_ID);
+*/
+        builder.setBolt(STAT_BOLT_ID_EVTN3, sb3)
+        .globalGrouping(TOOMANYNAMECHANGE_BOLT_ID);
 
         builder.setBolt(EMIT_BOLT_ID, emitEventBolt)
         .globalGrouping(TOOMANYNAMECHANGE_BOLT_ID);
 
-        
-        
-        
-        
         Config conf = new Config();
-
         conf.put("webserver", WEBSERVER);
         conf.put("download-time", DOWNLOAD_TIME);
         

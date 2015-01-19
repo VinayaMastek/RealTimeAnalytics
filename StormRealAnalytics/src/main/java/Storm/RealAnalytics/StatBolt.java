@@ -8,6 +8,8 @@ import backtype.storm.tuple.Tuple;
 
 import java.util.Map;
 
+import net.sf.json.JSONObject;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -34,12 +36,30 @@ public class StatBolt extends BaseRichBolt {
 	}
 
 	public void execute(Tuple tuple) {
+		String session = null;
+		String action = null;
 		if (tuple != null) {
 			System.out.println("Inside Stat blot");
-			String session = tuple.getStringByField("session");
+			if (tuple.contains("session"))
+			{
+				 session = tuple.getStringByField("session");
+				 action = "NOACTION";
+			}
+			if (tuple.contains("eventoutput"))
+			{
+				 JSONObject js = (JSONObject) tuple.getValueByField("eventoutput");
+				 System.out.println("######" + js.toString());
+				 action = tuple.getStringByField("action");
+				 session = js.getString("sessionid");
+			}
+
+			
+			
+			
 			String description = tuple.getStringByField("desc");
 			String content = "{ \"tran\": \"" + session + "\",\"msg\": \""
-					+ description + "\" }";
+					+ description +"\" ,\"action\": \""
+					+ action +"\"}";
 
 			System.out.println(webserver.toString());
 			System.out.println(content);
@@ -48,6 +68,7 @@ public class StatBolt extends BaseRichBolt {
 			try {
 				post.setEntity(new StringEntity(content));
 				post.setHeader("Content-Type", "application/json");
+				
 				HttpResponse response = client.execute(post);
 				org.apache.http.util.EntityUtils.consume(response.getEntity());
 				System.out.println("executed post");

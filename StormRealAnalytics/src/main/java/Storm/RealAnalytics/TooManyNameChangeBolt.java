@@ -50,7 +50,7 @@ public class TooManyNameChangeBolt extends BaseRichBolt {
 					System.out.println(desc);
 					eventType = "TooManyNameChange";
 					eventObj.put("event", eventType);
-					this.collector.emit(new Values(eventObj, desc));
+					this.collector.emit(new Values(eventObj, desc,"APPUI_ACCEPT_PASSPORT"));
 				}
 			}
 
@@ -58,6 +58,6 @@ public class TooManyNameChangeBolt extends BaseRichBolt {
 	}
 
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-		declarer.declare(new Fields("eventoutput", "desc"));
+		declarer.declare(new Fields("eventoutput", "desc","action"));
 	}
 }

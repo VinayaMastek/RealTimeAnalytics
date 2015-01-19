@@ -15,6 +15,7 @@
 	var accountid;
 	var owner;
 	var transactionid = null;
+
 	openTran();
 	$(document)
 			.ready(
@@ -39,6 +40,14 @@
 						var annualAmt = document.getElementById('annualincome');
 						//var transactionid = "222";
 						var payload = {};
+						var passportdtl = document
+								.getElementById('PassportDTL');
+						var passportno = document.getElementById('PassportNO');
+						var passportdt = document.getElementById('PassportDT');
+
+						passportdtl.setAttribute("disabled", true);
+						passportno.setAttribute("disabled", true);
+						passportdt.setAttribute("disabled", true);
 
 						firstnametxt.addEventListener('change',
 								function(event) {
@@ -125,11 +134,16 @@
 						if ("WebSocket" in window) {
 							console
 									.log('WebSocket is supported by your browser.');
-							var serviceUrl = 'ws://'
-									+ 'localhost:8080'
+							/* var serviceUrl = 'ws://'
+									+ 'mastekinnovation.com:8080'
 									+ '/EventProcessingAPI/websocket/notifyAnnotation?transactionid='
 									+ transactionid;
-							var socket = new WebSocket(serviceUrl);
+ */
+							 var serviceUrl = 'ws://'
+							 + 'localhost:8080'
+							 + '/EventProcessingAPI/websocket/notifyAnnotation?transactionid='
+							 + transactionid;
+	 						var socket = new WebSocket(serviceUrl);
 							socket.onopen = function() {
 								console.log('Connection Established!');
 							};
@@ -146,9 +160,38 @@
 								if (typeof e.data === "string") {
 									console.log('String message received: '
 											+ e.data);
-									var countStr = e.data.split(":");
-									document.getElementById("count")
-											.setAttribute("value", countStr[1]);
+
+									if (e.data.indexOf("Connection") < 0) {
+										var json = JSON.parse(e.data);
+
+										console.log("json is " + json);
+										console.log("action is " + json.action);
+										if (json.action == "NOACTION") {
+											var countStr = json.msg.split(":");
+											document.getElementById("count")
+													.setAttribute("value",
+															countStr[1]);
+
+										} else {
+
+											/* 				var passportdtl = document.getElementById('PassportDTL');
+															var passportno = document.getElementById('PassportNO');
+															var passportdt = document.getElementById('PassportDT');
+															
+															passportdtl.setAttribute("disabled", false);
+															passportno.setAttribute("disabled", false);
+															passportdt.setAttribute("disabled", false);
+											 */
+											document
+													.getElementById('PassportDTL').disabled = false;
+											document
+													.getElementById('PassportNO').disabled = false;
+											document
+													.getElementById('PassportDT').disabled = false;
+
+										}
+
+									}
 
 								} else if (e.data instanceof ArrayBuffer) {
 									console.log('ArrayBuffer received: '
@@ -171,6 +214,15 @@
 	$(function() {
 		$("#ApplicantDOB").datepicker();
 	});
+
+	$(function() {
+		$("#PassportDT").datepicker();
+	});
+
+	function toggle_visibility(id) {
+		document.getElementById(id).setAttribute("disabled", true);
+
+	}
 
 	function openWindow(windowUrl) {
 		jQuery.support.cors = true;
@@ -199,28 +251,30 @@
 			return false;
 		}
 	}
-	
+
 	function openTran() {
 		if (transactionid != null)
 			return;
-		$.ajax({
-			type : 'GET',
-			url : 'http://localhost:8080/EventProcessingAPI/rest/events/opentran',
-			contentType : "application/json; charset=utf-8",
-			dataType : "json",
-			async : false,
-			success : function(data) {
-				console.log(data);
+		$
+				.ajax({
+					type : 'GET',
+					//url : 'http://mastekinnovation.com:8080/EventProcessingAPI/rest/events/opentran',
+					url : 'http://localhost:8080/EventProcessingAPI/rest/events/opentran',
+					contentType : "application/json; charset=utf-8",
+					dataType : "json",
+					async : false,
+					success : function(data) {
+						console.log(data);
 
-				//var jsonData = $.parseJSON(data); //if data is not json
-				transactionid = data.tranid;
-				
-			},
-			error : function(msg) {
-				alert(msg.responseText);
-			}
+						//var jsonData = $.parseJSON(data); //if data is not json
+						transactionid = data.tranid;
 
-		});
+					},
+					error : function(msg) {
+						alert(msg.responseText);
+					}
+
+				});
 
 	}
 
@@ -233,6 +287,7 @@
 		$
 				.ajax({
 					type : 'POST',
+					//url : 'http://mastekinnovation.com:8080/EventProcessingAPI/rest/events/eventpost',
 					url : 'http://localhost:8080/EventProcessingAPI/rest/events/eventpost',
 					data : JSON.stringify(eventObj),
 					contentType : "application/json; charset=utf-8",
@@ -346,6 +401,7 @@
 					<div class="centerContent pull-left">
 						<h1>Get Quote</h1>
 						<h2>All About You</h2>
+
 						<div class="formElement">
 							<label for="ApplicantName" class="bold"><span
 								class="mandatorStar">*</span> Applicant Name&nbsp;</label>
@@ -481,9 +537,37 @@
 							<div class="CL"></div>
 						</div>
 
+						<!---- Additional fields--->
+						<div class="formElement" id="PassportDTL">
+							<label for="Passport" class="bold"><span
+								class="mandatorStar">*</span> Passport Number & Issue date
+								&nbsp;</label>
+							<div class="MT1">
+
+								<div class=" mediumW pull-left MR5">
+									<input type="text" id="PassportNO" name="ApplicantFName"
+										tabindex="12" class="input_full" /> <span class="hint">Passport
+										Number</span>
+								</div>
+							</div>
+
+							<div class="MT1">
+								<div class="mediumW pull-left MR5">
+									<input type="text" class="input_full_wrap pull-left"
+										tabindex="13" name="PassportDT" id="PassportDT" /> <span
+										class="hint"> DD/MM/YYYY </span>
+								</div>
+
+							</div>
+							<div class="CL"></div>
+						</div>
+
+						<!---- Additional fields End--->
+
+
 						<div class="content-separator"></div>
 						<div class="MT1">
-							<button id="CreateContact" type="button" tabindex="12"
+							<button id="CreateContact" type="button" tabindex="14"
 								class="loginBtn pull-Left" value="CreateContact">Create
 								Contact</button>
 						</div>

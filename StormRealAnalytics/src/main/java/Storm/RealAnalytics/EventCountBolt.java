@@ -38,11 +38,11 @@ public class EventCountBolt extends BaseRichBolt{
 			this.counts.put(session, count);
 		
 		    String desc = session + " : " + count;
-		    this.collector.emit(new Values(session,eventType, desc, count));
+		    this.collector.emit(new Values(session,eventType, desc, count,"NOACTION"));
         }
     }
 
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        declarer.declare(new Fields("session","eventType", "desc","count"));
+        declarer.declare(new Fields("session","eventType", "desc","count","action"));
     }
 }
