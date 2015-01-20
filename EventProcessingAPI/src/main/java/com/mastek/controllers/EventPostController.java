@@ -161,8 +161,12 @@ public class EventPostController {
 		JSONObject eventData = JSONObject.fromObject(eData);
 		Session s = SessionRegistry.getTransaction((String) eventData
 				.get("tran"));
+		Session s1 = SessionRegistry.getTransaction("ad"+(String) eventData
+				.get("tran"));
+
 		//echoTextMessage(s, eventData.getString("msg"), true);
 		echoTextMessage(s, eventData.toString(), true);
+		echoTextMessage(s1, eventData.toString(), true);
 
 		System.out.println("Inside CountUpdt");
 
