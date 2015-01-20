@@ -117,6 +117,43 @@ public class PostgresImpl {
 		return tranid;
 		    }
 
+	
+	public String fetchTran() {
+		String outtran;
+		String quote = "'";
+		String sql = "select tranid from tran where status=" + quote + 'O' + quote;
+		// event, payload, timestamp, sessionid
+
+
+	
+	
+		System.out.println(sql);
+		
+		outtran="";
+		String com=" ";
+		
+		 try {
+		        stmt =conn.createStatement();
+		        int tranid;
+		        ResultSet rs = stmt.executeQuery(sql);
+		        while (rs.next()) {
+		            tranid = rs.getInt("tranid");
+		        	outtran=outtran+com+"{\"tran\":\""+tranid+"\"}";
+		        	com=",";
+		            
+		        }
+		        
+		        return outtran;
+		 } catch (SQLException e ) {
+			 e.printStackTrace();
+		    } finally {
+		        }
+		return outtran;
+		    }
+
+	
+	
+	
 	public void closeTran(JSONObject edata) {
 		String quote = "'";
 

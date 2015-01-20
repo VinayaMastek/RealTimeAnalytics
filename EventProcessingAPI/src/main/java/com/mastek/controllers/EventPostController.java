@@ -90,6 +90,30 @@ public class EventPostController {
 		return tranid;
 	}
 
+	
+	@GET
+	@Path("/fetchtran")
+	// @Consumes(MediaType.APPLICATION_JSON)
+	public JSONObject FetchTran(@Context HttpServletResponse servletResponse) {
+		String outtran = fetchTran();
+		JSONObject oo = new JSONObject();
+		oo.put ("output",outtran);
+		return oo;
+	}
+
+	// http://localhost:8080/RealAnalyticsUI/rest/events/eventpost?eventdata="test";
+
+	private String fetchTran() {
+		PostgresImpl pg = new PostgresImpl();
+		pg.connect();
+		String outtran = pg.fetchTran();
+		pg.close();
+		return outtran;
+	}
+
+	
+	
+	
 	@POST
 	@Path("/closetran")
 	@Consumes(MediaType.APPLICATION_JSON)
