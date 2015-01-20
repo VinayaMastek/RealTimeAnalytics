@@ -337,7 +337,13 @@ td.lasttd { border-right:none; }
     font-weight: bold;
 }
 
+
+
 .hidden {display: none;}
+.visible {
+        display: block;
+   }
+
 
 .quiet {color: #999;}
 .loud {color: #000;}

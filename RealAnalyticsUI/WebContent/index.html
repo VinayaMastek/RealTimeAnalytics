@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="ISO-8859-1">
-<title>Motor Insurance Quote</title>
+<title>Loan Application</title>
 <link rel="stylesheet"
 	href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
 <link rel="stylesheet" type="text/css" media="all" href="css/style.css" />
@@ -12,18 +12,28 @@
 
 
 <script type="text/javascript">
-	var accountid;
-	var owner;
+	var applicationid = null;
 	var transactionid = null;
-
-	openTran();
+	var socket = null;
+	
+	// to disconnect from event api
 	$(document)
 			.ready(
 					function() {
-						var createbtn = document
-								.getElementById('CreateContact');
-						var getQuotebtn = document.getElementById('GetQuote');
+						var newappbtn = document.getElementById('newAppBtn');
+						var searchbtn = document.getElementById('searchBtn');
 
+						var applicationDiv = document.getElementById('application');
+						var searchDiv = document.getElementById('search');
+						var gobtn = document.getElementById('goBtn');
+						
+						var saveappbtn = document
+								.getElementById('saveappBtn');
+				
+						var finalizeappbtn = document
+						.getElementById('finalizeappBtn');
+				
+						
 						// Capture Change Event
 						var firstnametxt = document
 								.getElementById('ApplicantFName');
@@ -38,6 +48,7 @@
 						var zipcode = document.getElementById('pincode');
 						var email = document.getElementById('email');
 						var annualAmt = document.getElementById('annualincome');
+						var loanAmt = document.getElementById('loanamount');
 						//var transactionid = "222";
 						var payload = {};
 						var passportdtl = document
@@ -126,90 +137,64 @@
 							createEvent('change', payload);
 						});
 
-						//add event listener
-						createbtn.addEventListener('click', function(event) {
-							createContact();
+						annualAmt.addEventListener('focus', function(event) {
+							payload = {
+								'field' : 'annualincome',
+								'value' : annualAmt.value,
+								'tran' : transactionid
+							};
+							createEvent('change', payload);
 						});
 
-						if ("WebSocket" in window) {
-							console
-									.log('WebSocket is supported by your browser.');
-							/* var serviceUrl = 'ws://'
-									+ 'mastekinnovation.com:8080'
-									+ '/EventProcessingAPI/websocket/notifyAnnotation?transactionid='
-									+ transactionid;
- */
-							 var serviceUrl = 'ws://'
-							 + 'localhost:8080'
-							 + '/EventProcessingAPI/websocket/notifyAnnotation?transactionid='
-							 + transactionid;
-	 						var socket = new WebSocket(serviceUrl);
-							socket.onopen = function() {
-								console.log('Connection Established!');
+						annualAmt.addEventListener('blur', function(event) {
+							payload = {
+								'field' : 'annualincome',
+								'value' : annualAmt.value,
+								'tran' : transactionid
 							};
+							createEvent('change', payload);
+						});
 
-							socket.onclose = function() {
-								console.log('Connection Closed!');
+						loanAmt.addEventListener('change', function(event) {
+							payload = {
+								'field' : 'loanamount',
+								'value' : loanAmt.value,
+								'tran' : transactionid
 							};
+							createEvent('change', payload);
+						});
 
-							socket.onerror = function(error) {
-								console.log('Error Occured: ' + error);
-							};
+						//add event listener
+						gobtn.addEventListener('click', function(event) {
+							gosearch();
+						});
 
-							socket.onmessage = function(e) {
-								if (typeof e.data === "string") {
-									console.log('String message received: '
-											+ e.data);
+						
+						//add event listener
+						saveappbtn.addEventListener('click', function(event) {
+							applicationSave();
+						});
 
-									if (e.data.indexOf("Connection") < 0) {
-										var json = JSON.parse(e.data);
+						
+						//add event listener
+						finalizeappbtn.addEventListener('click', function(event) {
+							applicationFinalize();
+						});
+						
+ 						//add event listener
+						newappbtn.addEventListener('click', function(event) {
+							newapp();
+						});
 
-										console.log("json is " + json);
-										console.log("action is " + json.action);
-										if (json.action == "NOACTION") {
-											var countStr = json.msg.split(":");
-											document.getElementById("count")
-													.setAttribute("value",
-															countStr[1]);
-
-										} else {
-
-											/* 				var passportdtl = document.getElementById('PassportDTL');
-															var passportno = document.getElementById('PassportNO');
-															var passportdt = document.getElementById('PassportDT');
-															
-															passportdtl.setAttribute("disabled", false);
-															passportno.setAttribute("disabled", false);
-															passportdt.setAttribute("disabled", false);
-											 */
-											document
-													.getElementById('PassportDTL').disabled = false;
-											document
-													.getElementById('PassportNO').disabled = false;
-											document
-													.getElementById('PassportDT').disabled = false;
-
-										}
-
-									}
-
-								} else if (e.data instanceof ArrayBuffer) {
-									console.log('ArrayBuffer received: '
-											+ e.data);
-								} else if (e.data instanceof Blob) {
-									console.log('Blob received: ' + e.data);
-								} else
-									console.log('Unknown: ' + e.data);
-							};
-						}
-
+						//add event listener
+						searchbtn.addEventListener('click', function(event) {
+							search();
+						});
+ 
+ 
 					});
 
-	$(function() {
-		$('input[name="radioowner"]').change(function() {
-			owner = $(this).next('label').text();
-		})
-	});
+	
 
 	$(function() {
 		$("#ApplicantDOB").datepicker();
@@ -218,22 +203,6 @@
 	$(function() {
 		$("#PassportDT").datepicker();
 	});
-
-	function toggle_visibility(id) {
-		document.getElementById(id).setAttribute("disabled", true);
-
-	}
-
-	function openWindow(windowUrl) {
-		jQuery.support.cors = true;
-		window.open(windowUrl, 'Connect', 'width=675,height=524').focus();
-	};
-
-	function getAuthorizeUrl(loginUrl, clientId, redirectUri) {
-		return loginUrl + 'services/oauth2/authorize?display=popup'
-				+ '&response_type=token&client_id=' + escape(clientId)
-				+ '&redirect_uri=' + escape(redirectUri);
-	}
 
 	function isTrue(value) {
 		if (typeof (value) == 'string') {
@@ -252,6 +221,59 @@
 		}
 	}
 
+	/*Function to make the applciation panel visible and create a new transaction id*/
+	function newapp() {
+		var applicationDiv= document.getElementById('application');
+		var trantxt= document.getElementById('transactiontxt');
+		transactionid =null;
+		
+		openTran();
+		enableSocket();
+
+		trantxt.setAttribute('value', transactionid);
+		applicationDiv.setAttribute('class', 'visible');	
+	}
+	
+	
+	/*Function to make the search panel visible and retrieve exisiting application*/
+	function search() {
+		var searchDiv= document.getElementById('search');
+		searchDiv.setAttribute('class', 'visible');
+	}
+
+	function gosearch()
+	{
+		var tran = document.getElementById("gotran").value;
+		console.log("Transaction to be searched is : " + tran);
+		$
+		.ajax({
+			type : 'GET',
+			url : 'http://localhost:8080/EventProcessingAPI/rest/events/getapplication',
+			data : tran,
+			contentType : "application/json; charset=utf-8",
+			dataType : "json",
+			async : false,
+			success : function(data) {
+				console.log(data);
+				transactionid = data.transactionid;
+				enableSocket();
+				showdata(data);
+			},
+			error : function(msg) {
+				alert(msg.responseText);
+			}
+
+		});
+	}
+	
+	
+	function showdata(data){
+		document.getElementById("ApplicantFName").setAttribute("value",	data.firstname);
+		document.getElementById("ApplicantLName").setAttribute("value",	data.lastname);
+	}
+
+	
+	
 	function openTran() {
 		if (transactionid != null)
 			return;
@@ -278,6 +300,75 @@
 
 	}
 
+	function enableSocket(){
+		if ("WebSocket" in window) {
+			console
+					.log('WebSocket is supported by your browser.');
+			/* var serviceUrl = 'ws://'
+					+ 'mastekinnovation.com:8080'
+					+ '/EventProcessingAPI/websocket/notifyAnnotation?transactionid='
+					+ transactionid;
+			 */
+			var serviceUrl = 'ws://'
+					+ 'localhost:8080'
+					+ '/EventProcessingAPI/websocket/notifyAnnotation?transactionid='
+					+ transactionid;
+			socket = new WebSocket(serviceUrl);
+
+			socket.onopen = function() {
+				console.log('Connection Established!');
+			};
+
+			socket.onclose = function() {
+				console.log('Connection Closed!');
+			};
+
+			socket.onerror = function(error) {
+				console.log('Error Occured: ' + error);
+			};
+
+			socket.onmessage = function(e) {
+				if (typeof e.data === "string") {
+					console.log('String message received: '
+							+ e.data);
+
+					if (e.data.indexOf("Connection") < 0) {
+						var json = JSON.parse(e.data);
+
+						console.log("json is " + json);
+						console.log("action is " + json.action);
+						if (json.action == "NOACTION") {
+							var countStr = json.msg.split(":");
+							document.getElementById("count")
+									.setAttribute("value",
+											countStr[1]);
+
+						} else {
+
+							document
+									.getElementById('PassportDTL').disabled = false;
+							document
+									.getElementById('PassportNO').disabled = false;
+							document
+									.getElementById('PassportDT').disabled = false;
+
+						}
+
+					}
+
+				} else if (e.data instanceof ArrayBuffer) {
+					console.log('ArrayBuffer received: '
+							+ e.data);
+				} else if (e.data instanceof Blob) {
+					console.log('Blob received: ' + e.data);
+				} else
+					console.log('Unknown: ' + e.data);
+			};
+		}
+		
+	}
+	
+	
 	function createEvent(event, payload) {
 		eventObj = {}
 		eventObj['event'] = event;
@@ -287,7 +378,7 @@
 		$
 				.ajax({
 					type : 'POST',
-					//url : 'http://mastekinnovation.com:8080/EventProcessingAPI/rest/events/eventpost',
+					//url :clos 'http://mastekinnovation.com:8080/EventProcessingAPI/rest/events/eventpost',
 					url : 'http://localhost:8080/EventProcessingAPI/rest/events/eventpost',
 					data : JSON.stringify(eventObj),
 					contentType : "application/json; charset=utf-8",
@@ -300,30 +391,84 @@
 
 	}
 
-	function createContact() {
-		var contactObj = {};
-		contactObj['firstName'] = $(this).attr('ApplicantFName').value;
-		contactObj['lastName'] = $(this).attr('ApplicantLName').value;
+	function applicationSave() {
+		var applicationObj = {};
+		applicationObj['title'] = $(this).attr('select_title').options[$(this).attr('select_title').selectedIndex].text;
+		applicationObj['lastName'] = $(this).attr('ApplicantLName').value;
+		applicationObj['firstName'] = $(this).attr('ApplicantFName').value;
 
 		var st = $(this).attr('ApplicantDOB').value;
 		var pattern = /(\d{2})\/(\d{2})\/(\d{4})/;
 		var dt = new Date(st.replace(/(\d{2})\/(\d{2})\/(\d{4})/, '$3-$2-$1'));
-
-		contactObj['birthdate'] = dt.toISOString()
-		contactObj['maritalStatus'] = $(this).attr('select_marital').options[$(
+		//applicationObj['dob'] = dt.toISOString()
+		applicationObj['dob'] = dt;
+		applicationObj['maritalStatus'] = $(this).attr('select_marital').options[$(
 				this).attr('select_marital').selectedIndex].text;
-		contactObj['Salutation'] = $(this).attr('select_title').options[$(this)
-				.attr('select_title').selectedIndex].text;
-		contactObj['zipcode'] = $(this).attr('pincode').value;
-		contactObj['emailid'] = $(this).attr('emailid').value;
 
-		client.create('Contact', contactObj, function(response) {
-			$('#message3').html('Contact Creation Successful');
-		}, function(error) {
-			console.log(error);
+		applicationObj['pincode'] = $(this).attr('pincode').value;
+		applicationObj['address'] = $(this).attr('address').value;
+		applicationObj['emptype'] = $(this).attr('select_emptype').options[$(
+				this).attr('select_emptype').selectedIndex].text;
+		applicationObj['industry'] = $(this).attr('select_industry').options[$(
+				this).attr('select_industry').selectedIndex].text;
+		applicationObj['email'] = $(this).attr('email').value;
+		applicationObj['annualincome'] = $(this).attr('annualincome').value;
+		applicationObj['loanamount'] = $(this).attr('loanamount').value;
+		
+		var passno = null;
+		if ($(this).attr('PassportNO').value !=null)
+				passno =$(this).attr('PassportNO').value;
+		
+		applicationObj['passportnumber'] = passno;
+		
+		
+		var st = $(this).attr('PassportDT').value;
+		pdt = null;
+		
+		if (st != null){
+			var pattern = /(\d{2})\/(\d{2})\/(\d{4})/;
+			var pdt = new Date(st.replace(/(\d{2})\/(\d{2})\/(\d{4})/, '$3-$2-$1'));
+		}	
+				
+		//applicationObj['dob'] = dt.toISOString()
+		applicationObj['passportdate'] = pdt;
+		applicationObj['transactionid'] = transactionid;
+		applicationObj['status'] = 'S';
+		console.log(applicationObj);
+		$
+		.ajax({
+			type : 'POST',
+			url : 'http://localhost:8080/EventProcessingAPI/rest/events/applicationsave',
+			data : JSON.stringify(applicationObj),
+			contentType : "application/json; charset=utf-8",
+			dataType : "json",
+			async : true,
+			error : function(msg) {
+				alert(msg.responseText);
+			}
 		});
-
 	}
+	
+	function applicationFinalize() {
+		var applicationObj = {};
+		applicationObj['id'] = applicationId;
+		applicationObj['status'] = 'F';
+		console.log(applicationObj);
+		$
+		.ajax({
+			type : 'POST',
+			url : 'http://localhost:8080/EventProcessingAPI/rest/events/applicationfinalize',
+			data : JSON.stringify(applicationObj),
+			contentType : "application/json; charset=utf-8",
+			dataType : "json",
+			async : true,
+			error : function(msg) {
+				alert(msg.responseText);
+			}
+		});
+	}
+		
+	
 </script>
 <script type="text/javascript">
 	$(document).ready(function() {
@@ -360,7 +505,7 @@
 			<div id="header">
 
 				<div class="pull-left logo">
-					<a href="#">Motor Insurance Quote</a>
+					<a href="#">Loan Application</a>
 				</div>
 				<div class="pull-left navigation">
 					<div id="main-nav"></div>
@@ -385,193 +530,234 @@
 										tabindex="6" name="count" id="count">
 								</div>
 							</div>
-
-							<!-- 							<ul class="nice-list notifyIcon">
-								<li class="icon_done"><a href="#">Number of Changes so
-										far</a></li>
-
-								<li class="icon_note"><a href="#">Name changed after
-										email</a></li>
-							</ul>
- -->
 						</div>
 					</div>
 
 					<!--Main content start Here-->
 					<div class="centerContent pull-left">
-						<h1>Get Quote</h1>
-						<h2>All About You</h2>
-
-						<div class="formElement">
-							<label for="ApplicantName" class="bold"><span
-								class="mandatorStar">*</span> Applicant Name&nbsp;</label>
+						<h1>Loan Application</h1>
+						<div id=chooseAction class="formElement">
+							<h2>Choose Action</h2>
 							<div class="MT1">
-								<div class=" mediumW pull-left MR5">
-									<select id="select_title" name="select_title"
-										class="input_full" tabindex="1">
-										<option value="1">Mr</option>
-										<option value="2">Miss</option>
-										<option value="3">Mrs</option>
-										<option value="4">Master</option>
-									</select> <span class="hint">Title</span>
-								</div>
+								<button id="newAppBtn" type="button" tabindex="1" class="submit"
+									value="newapp">New Loan Application</button>
 
-								<div class=" mediumW pull-left MR5">
-									<input type="text" id="ApplicantFName" name="ApplicantFName"
-										tabindex="2" class="input_full" /> <span class="hint">First
-										Name</span>
-								</div>
+								<button id="searchBtn" type="button" tabindex="1" class="submit"
+									value="search">Retrieve Existing Application</button>
 
-								<div class=" mediumW pull-left">
-									<input type="text" id="ApplicantLName" name="ApplicantLName"
-										tabindex="3" class="input_full" onfocus="" /> <span
-										class="hint">Last Name</span>
-								</div>
 							</div>
-							<div class="CL"></div>
+							<div class="content-separator"></div>
 						</div>
 
-						<div class="formElement">
-							<div class="mediumW pull-left MR5">
-								<label class="bold" for="ApplicantName"><span
-									class="mandatorStar">*</span> Date of Birth</label>
-								<div class="MT1">
-									<input type="text" class="input_full_wrap pull-left"
-										tabindex="4" name="ApplicantDOB" id="ApplicantDOB">
-
+						<div id=search class="hidden">
+							<h2>Search for Transaction</h2>
+							<label for="Search" class="bold">Search for existing
+								Application</label>
+							<div class="MT1">
+								<div class=" mediumW pull-left MR5">
+									<input id="gotran" type="search" class="input_full">
 								</div>
-								<span class="hint"> DD/MM/YYYY </span>
+								<button id="goBtn" type="button" tabindex="1" class="submit"
+									value="go">GO</button>
+							</div>
+							<div class="content-separator"></div>
+						</div>
+
+
+
+						<div id=application class="hidden">
+							<div class="formElement">
+								<h2>All About You</h2>
+								<div class="MT1">
+									<label for="Transaction" class="bold">Your Transaction
+										Number is : </label> <input type="text" id="transactiontxt"
+										name="transactiontxt" tabindex="12" />
+								</div>
 							</div>
 
-							<div class="mediumW pull-left MR5">
+							<div class="formElement">
 								<label for="ApplicantName" class="bold"><span
-									class="mandatorStar">*</span> Marital Status</label>
+									class="mandatorStar">*</span> Applicant Name&nbsp;</label>
 								<div class="MT1">
-									<select id="select_marital" name="select_marital"
-										class="input_full_wrap pull-left" tabindex="5">
-										<option value="1">Single</option>
-										<option value="2">Married</option>
-										<option value="3">Divorced</option>
-										<option value="4">Separated</option>
-										<option value="5">Widowed</option>
-										<option value="6">Unknown</option>
-									</select>
-								</div>
-							</div>
-							<div class="CL"></div>
-						</div>
+									<div class=" mediumW pull-left MR5">
+										<select id="select_title" name="select_title"
+											class="input_full" tabindex="1">
+											<option value="1">Mr</option>
+											<option value="2">Miss</option>
+											<option value="3">Mrs</option>
+											<option value="4">Master</option>
+										</select> <span class="hint">Title</span>
+									</div>
 
+									<div class=" mediumW pull-left MR5">
+										<input type="text" id="ApplicantFName" name="ApplicantFName"
+											tabindex="2" class="input_full" /> <span class="hint">First
+											Name</span>
+									</div>
 
-						<div class="formElement">
-							<div class="mediumW pull-left MR5">
-								<label class="bold" for="ApplicantName"><span
-									class="mandatorStar">*</span> Pincode</label>
-								<div class="MT1">
-									<input type="text" class="input_full_wrap pull-left"
-										tabindex="6" name="pincode" id="pincode">
+									<div class=" mediumW pull-left">
+										<input type="text" id="ApplicantLName" name="ApplicantLName"
+											tabindex="3" class="input_full" onfocus="" /> <span
+											class="hint">Last Name</span>
+									</div>
 								</div>
-							</div>
-
-							<div class="mediumW pull-left MR5">
-								<label class="bold" for="ApplicantName"><span
-									class="mandatorStar">*</span> Address</label>
-								<div class="MT1">
-									<input type="text" class="input_full pull-left" tabindex="7"
-										name="address" id="address">
-								</div>
+								<div class="CL"></div>
 							</div>
 
-							<div class="CL"></div>
-						</div>
-
-						<div class="formElement">
-							<div class="mediumW pull-left MR5">
-								<label class="bold" for="ApplicantName"><span
-									class="mandatorStar">*</span> Employment type</label>
-								<div class="MT1">
-									<select id="select_emptype" name="select_emptype"
-										class="input_full_wrap pull-left" tabindex="8">
-										<option value="1">Self Employed</option>
-										<option value="2">Employed</option>
-										<option value="3">UnEmployed</option>
-										<option value="4">Student</option>
-									</select>
-								</div>
-							</div>
-
-							<div class="mediumW pull-left MR5">
-								<label class="bold" for="ApplicantName"><span
-									class="mandatorStar">*</span> Industry</label>
-								<div class="MT1">
-									<select id="select_industry" name="select_industry"
-										class="input_full_wrap pull-left" tabindex="9">
-										<option value="1">Retail</option>
-										<option value="2">Manufacturing</option>
-										<option value="3">Information Technology</option>
-										<option value="4">Others</option>
-									</select>
-								</div>
-							</div>
-							<div class="CL"></div>
-						</div>
-
-						<div class="formElement">
-							<div class="mediumW pull-left MR5">
-								<label class="bold" for="ApplicantName"><span
-									class="mandatorStar">*</span> Annual Income</label>
-								<div class="MT1">
-									<input type="text" class="input_full_wrap pull-left"
-										tabindex="10" name="annualincome" id="annualincome">
-								</div>
-							</div>
-
-							<div class="mediumW pull-left MR5">
-								<label class="bold" for="ApplicantName"><span
-									class="mandatorStar">*</span> Email</label>
-								<div class="MT1">
-									<input type="text" class="input_full pull-left" tabindex="11"
-										name="email" id="email">
-								</div>
-							</div>
-
-							<div class="CL"></div>
-						</div>
-
-						<!---- Additional fields--->
-						<div class="formElement" id="PassportDTL">
-							<label for="Passport" class="bold"><span
-								class="mandatorStar">*</span> Passport Number & Issue date
-								&nbsp;</label>
-							<div class="MT1">
-
-								<div class=" mediumW pull-left MR5">
-									<input type="text" id="PassportNO" name="ApplicantFName"
-										tabindex="12" class="input_full" /> <span class="hint">Passport
-										Number</span>
-								</div>
-							</div>
-
-							<div class="MT1">
+							<div class="formElement">
 								<div class="mediumW pull-left MR5">
-									<input type="text" class="input_full_wrap pull-left"
-										tabindex="13" name="PassportDT" id="PassportDT" /> <span
-										class="hint"> DD/MM/YYYY </span>
+									<label class="bold" for="ApplicantName"><span
+										class="mandatorStar">*</span> Date of Birth</label>
+									<div class="MT1">
+										<input type="text" class="input_full_wrap pull-left"
+											tabindex="4" name="ApplicantDOB" id="ApplicantDOB">
+
+									</div>
+									<span class="hint"> DD/MM/YYYY </span>
 								</div>
 
+								<div class="mediumW pull-left MR5">
+									<label for="ApplicantName" class="bold"><span
+										class="mandatorStar">*</span> Marital Status</label>
+									<div class="MT1">
+										<select id="select_marital" name="select_marital"
+											class="input_full_wrap pull-left" tabindex="5">
+											<option value="1">Single</option>
+											<option value="2">Married</option>
+											<option value="3">Divorced</option>
+											<option value="4">Separated</option>
+											<option value="5">Widowed</option>
+											<option value="6">Unknown</option>
+										</select>
+									</div>
+								</div>
+								<div class="CL"></div>
 							</div>
-							<div class="CL"></div>
+
+
+							<div class="formElement">
+								<div class="mediumW pull-left MR5">
+									<label class="bold" for="ApplicantName"><span
+										class="mandatorStar">*</span> Pincode</label>
+									<div class="MT1">
+										<input type="text" class="input_full_wrap pull-left"
+											tabindex="6" name="pincode" id="pincode">
+									</div>
+								</div>
+
+								<div class="mediumW pull-left MR5">
+									<label class="bold" for="ApplicantName"><span
+										class="mandatorStar">*</span> Address</label>
+									<div class="MT1">
+										<input type="text" class="input_full pull-left" tabindex="7"
+											name="address" id="address">
+									</div>
+								</div>
+
+								<div class="CL"></div>
+							</div>
+
+							<div class="formElement">
+								<div class="mediumW pull-left MR5">
+									<label class="bold" for="ApplicantName"><span
+										class="mandatorStar">*</span> Employment type</label>
+									<div class="MT1">
+										<select id="select_emptype" name="select_emptype"
+											class="input_full_wrap pull-left" tabindex="8">
+											<option value="1">Self Employed</option>
+											<option value="2">Employed</option>
+											<option value="3">UnEmployed</option>
+											<option value="4">Student</option>
+										</select>
+									</div>
+								</div>
+
+								<div class="mediumW pull-left MR5">
+									<label class="bold" for="ApplicantName"><span
+										class="mandatorStar">*</span> Industry</label>
+									<div class="MT1">
+										<select id="select_industry" name="select_industry"
+											class="input_full_wrap pull-left" tabindex="9">
+											<option value="1">Retail</option>
+											<option value="2">Manufacturing</option>
+											<option value="3">Information Technology</option>
+											<option value="4">Others</option>
+										</select>
+									</div>
+								</div>
+								<div class="CL"></div>
+							</div>
+
+							<div class="formElement">
+								<div class="mediumW pull-left MR5">
+									<label class="bold" for="ApplicantName"><span
+										class="mandatorStar">*</span> Annual Income</label>
+									<div class="MT1">
+										<input type="text" class="input_full_wrap pull-left"
+											tabindex="10" name="annualincome" id="annualincome">
+									</div>
+								</div>
+
+								<div class="mediumW pull-left MR5">
+									<label class="bold" ><span
+										class="mandatorStar">*</span> Loan Amount</label>
+									<div class="MT1">
+										<input type="text" class="input_full_wrap pull-left"
+											tabindex="10" name="loanamount" id="loanamount">
+									</div>
+								</div>
+
+								<div class="mediumW pull-left MR5">
+									<label class="bold" for="ApplicantName"><span
+										class="mandatorStar">*</span> Email</label>
+									<div class="MT1">
+										<input type="text" class="input_full pull-left" tabindex="11"
+											name="email" id="email">
+									</div>
+								</div>
+
+								<div class="CL"></div>
+							</div>
+
+							<!---- Additional fields--->
+							<div class="formElement" id="PassportDTL">
+								<div class="mediumW pull-left MR5">
+									<label for="Passport" class="bold"><span
+										class="mandatorStar">*</span> Passport Number &nbsp;</label>
+									<div class="MT1">
+										<input type="text" id="PassportNO" name="ApplicantFName"
+											tabindex="12" class="input_full" />
+									</div>
+								</div>
+								<div class="MT1">
+									<div class="mediumW pull-left MR5">
+										<label for="Passport" class="bold"><span
+											class="mandatorStar">*</span>Issue Date &nbsp;</label>
+										<div class="MT1">
+											<input type="text" class="input_full_wrap pull-left"
+												tabindex="13" name="PassportDT" id="PassportDT" /> <span
+												class="hint"> DD/MM/YYYY </span>
+										</div>
+									</div>
+								</div>
+
+								<div class="CL"></div>
+							</div>
+
+							<!---- Additional fields End--->
+
+
+							<div class="content-separator"></div>
+							<div class="MT1">
+								<button id="saveappBtn" type="button" tabindex="14"
+									class="loginBtn pull-Left" value="Save">Save Application</button>
+									
+								<button id="finalizeappBtn" type="button" tabindex="19"
+									class="loginBtn pull-Left" value="Commit">Finalize Application</button>
+									
+							</div>
+
 						</div>
-
-						<!---- Additional fields End--->
-
-
-						<div class="content-separator"></div>
-						<div class="MT1">
-							<button id="CreateContact" type="button" tabindex="14"
-								class="loginBtn pull-Left" value="CreateContact">Create
-								Contact</button>
-						</div>
-
 					</div>
 				</div>
 			</div>

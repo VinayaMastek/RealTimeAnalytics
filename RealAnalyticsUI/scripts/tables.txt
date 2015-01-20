@@ -1,7 +1,5 @@
 -- Table: events
-
 DROP TABLE IF EXISTS events;
-
 CREATE TABLE events
 (
   event character varying(20),
@@ -20,8 +18,7 @@ alter table events add column event_id serial;
 alter table events add column status character varying(1) default 'N';
 
 
-ROP TABLE IF EXISTS logtable;
-
+DROP TABLE IF EXISTS logtable;
 CREATE TABLE logtable
 (
   id serial,
@@ -31,5 +28,52 @@ WITH (
   OIDS=FALSE
 );
 ALTER TABLE logtable
+  OWNER TO postgres;
+
+
+-- Table: application
+DROP TABLE IF EXISTS application;
+REATE TABLE application
+(
+  id serial NOT NULL,
+  title character varying(10),
+  firstname character varying(100),
+  lastname character varying(100),
+  dob date,
+  maritalstatus character varying(20),
+  pincode character varying(10),
+  address character varying(300),
+  industry character varying(20),
+  annualincome numeric(11,2),
+  loanamount numeric(11,2),
+  email character varying(150),
+  passportnumber character varying(50),
+  passportdate date,
+  status character(1), -- S - Saved...
+  emptype character varying(20),
+  "timestamp" timestamp without time zone,
+  transactionid integer
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE application
+  OWNER TO postgres;
+COMMENT ON COLUMN application.status IS 'S - Saved
+C - Committed
+';
+
+  
+  -- Table: tran
+DROP TABLE IF EXISTS tran;
+CREATE TABLE tran
+(
+  tranid serial NOT NULL,
+  status character(1)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE tran
   OWNER TO postgres;
   
