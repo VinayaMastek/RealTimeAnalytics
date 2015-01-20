@@ -15,6 +15,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
@@ -69,7 +70,6 @@ public class EventPostController {
 
 	@GET
 	@Path("/opentran")
-	// @Consumes(MediaType.APPLICATION_JSON)
 	public JSONObject OpenTran(@Context HttpServletResponse servletResponse) {
 		JSONObject outtran = new JSONObject();
 		System.out.println("Ha Ha Ha.... I am first");
@@ -94,7 +94,6 @@ public class EventPostController {
 	
 	@GET
 	@Path("/fetchtran")
-	// @Consumes(MediaType.APPLICATION_JSON)
 	public JSONObject FetchTran(@Context HttpServletResponse servletResponse) {
 		String outtran = fetchTran();
 		JSONObject oo = new JSONObject();
@@ -112,8 +111,24 @@ public class EventPostController {
 		return outtran;
 	}
 
-	
-	
+
+	@GET
+	@Path("/getapplication")
+	public JSONObject GetApplication(@Context HttpServletResponse servletResponse, @QueryParam("transactionid") Integer transactionid) {
+		System.out.println(transactionid);
+		JSONObject application = fetchApplication(transactionid);
+		return application;
+	}
+
+
+	private JSONObject fetchApplication(Integer transactionId) {
+		PostgresImpl pg = new PostgresImpl();
+		pg.connect();
+		JSONObject application = pg.fetchApplication(transactionId);
+		pg.close();
+		return application;
+	}
+
 	
 	@POST
 	@Path("/closetran")
@@ -136,20 +151,36 @@ public class EventPostController {
 	}
 
 	@POST
-	@Path("/contactpost")
+	@Path("/applicationsave")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public void ContactPost(Object cData,
+	public void ApplicationSave(Object aData,
 			@Context HttpServletResponse servletResponse) {
-		addContact(JSONObject.fromObject(cData));
+		System.out.println(JSONObject.fromObject(aData));
+		addApplication(JSONObject.fromObject(aData));
 	}
 
-	// http://localhost:8080/RealAnalyticsUI/rest/events/eventpost?eventdata="test";
 
-	private void addContact(JSONObject contactData) {
+	private void addApplication(JSONObject applicationData) {
 		PostgresImpl pg = new PostgresImpl();
 		pg.connect();
-		pg.insertContact(contactData);
+		pg.insertApplication(applicationData);
 		pg.close();
+	}
+
+	@POST
+	@Path("/applicationfinalize")
+	@Consumes(MediaType.APPLICATION_JSON)
+	public void ApplicationFinalize(Object aData,
+			@Context HttpServletResponse servletResponse) {
+		finalizeApplication(JSONObject.fromObject(aData));
+	}
+
+	private void finalizeApplication(JSONObject applicationData) {
+		PostgresImpl pg = new PostgresImpl();
+		pg.connect();
+		pg.finalizeApplication(applicationData);
+		pg.close();
+		
 	}
 
 	@POST
