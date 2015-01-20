@@ -140,6 +140,7 @@ public class PostgresImpl {
 		            tranid = rs.getInt("tranid");
 		        	outtran=outtran+com+"{\"tran\":\""+tranid+"\"}";
 		        	com=",";
+		        	
 		            
 		        }
 		        
