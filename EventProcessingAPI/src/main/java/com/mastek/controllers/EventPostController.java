@@ -15,6 +15,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -22,6 +23,7 @@ import javax.ws.rs.core.MediaType;
 import net.sf.json.JSONObject;
 
 import com.mastek.domain.PostgresImpl;
+import com.sun.research.ws.wadl.Application;
 
 @ServerEndpoint("/websocket/notifyAnnotation")
 @Path("/events")
@@ -114,6 +116,7 @@ public class EventPostController {
 
 	@GET
 	@Path("/getapplication")
+	@Produces(MediaType.APPLICATION_JSON)
 	public JSONObject GetApplication(@Context HttpServletResponse servletResponse, @QueryParam("transactionid") Integer transactionid) {
 		System.out.println(transactionid);
 		JSONObject application = fetchApplication(transactionid);
@@ -150,6 +153,22 @@ public class EventPostController {
 		pg.close();
 	}
 
+	@POST
+	@Path("/applicationupdt")
+	@Consumes(MediaType.APPLICATION_JSON)
+	public void ApplicationUpdt(Object aData,
+			@Context HttpServletResponse servletResponse) {
+		System.out.println(JSONObject.fromObject(aData));
+		updateApplication(JSONObject.fromObject(aData));
+	}
+
+	private void updateApplication(JSONObject applicationData) {
+		PostgresImpl pg = new PostgresImpl();
+		pg.connect();
+		pg.updateApplication(applicationData);
+		pg.close();
+	}
+	
 	@POST
 	@Path("/applicationsave")
 	@Consumes(MediaType.APPLICATION_JSON)

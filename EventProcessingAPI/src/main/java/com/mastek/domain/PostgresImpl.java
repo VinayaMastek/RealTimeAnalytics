@@ -6,8 +6,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import net.sf.json.JSON;
 import net.sf.json.JSONArray;
+import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
+import net.sf.json.util.JSONUtils;
+import net.sf.json.xml.JSONTypes;
 
 public class PostgresImpl {
 	private Connection conn = null;
@@ -225,30 +229,57 @@ public class PostgresImpl {
 		String fieldStr = "(" + "title" +","+ "firstname" + "," + "lastname" + ","
 				+ "dob" + "," + "maritalstatus" + "," + "address" + ","
 				+ "pincode" + "," + "email" + "," + "emptype" + ","
-				+ "industry" + "," + "annualincome" + "," + "loanamount" + ","
+				+ "industry" + "," + "annualincome" + "," + "loanamount" + "," +"transactionid" + ","+"timestamp" + ","
 				 + "passportnumber"  + "," + "passportdate"  + ")";
 
 		String quote = "'";
-		String valueStr = "(" + quote + applicationData.getString("title") + quote
-				+ "," + quote + applicationData.getString("firstName") + quote
-				+ "," + quote + applicationData.getString("lastName") + quote
-				+ "," + quote + applicationData.get("dob") + quote 
-				+ "," + quote + applicationData.getString("maritalStatus") + quote
-				+ "," + quote + applicationData.getString("address") + quote
-				+ "," + quote + applicationData.getString("pincode") + quote
-				+ "," + quote + applicationData.getString("email") + quote
-				+ "," + quote + applicationData.getString("emptype") + quote
-				+ "," + quote + applicationData.getString("industry") + quote
+		String pdt = null;
+		String dt = null;
+
+		if (JSONUtils.isNull(applicationData.get("dob")))
+			dt = null;
+		else dt =quote+applicationData.get("dob")+quote;
+
+		if (JSONUtils.isNull(applicationData.get("passportdate")))
+			pdt = null;
+		else pdt =quote+applicationData.get("passportdate")+quote;
+
+		String valueStr = "(" + checkNull(applicationData.getString("title"))
+				+ "," + checkNull(applicationData.getString("firstName"))
+				+ "," + checkNull(applicationData.getString("lastName"))
+				+ "," + dt
+				+ "," + checkNull(applicationData.getString("maritalStatus"))
+				+ "," + checkNull(applicationData.getString("address"))
+				+ "," + checkNull(applicationData.getString("pincode"))
+				+ "," + checkNull(applicationData.getString("email"))
+				+ "," + checkNull(applicationData.getString("emptype"))
+				+ "," + checkNull(applicationData.getString("industry"))
 				+ "," + applicationData.get("annualincome") 
 				+ "," + applicationData.get("loanamount") 
-				+ "," + quote + applicationData.getString("passportnumber")+ quote 
-				+ "," + applicationData.get("passportdate")
+				+ "," + applicationData.getInt("transactionid") 
+				+ "," + applicationData.getString("timestamp") 
+				+ "," + checkNull(applicationData.getString("passportnumber")) 
+				+ "," + pdt
 				+ ")";
+		
+			
 		sql = sql + fieldStr + " VALUES " + valueStr;
 		System.out.println(sql);
 		executeSql(sql);
 	}
 
+	
+	
+	private String checkNull(String value)
+	{
+		String quote = "'";
+		if (value == null)
+			return null;
+		else 
+			return quote + value + quote;
+	}
+	
+	
 	public JSONObject fetchApplication(Integer transactionId) {
 		JSONObject jobj = new JSONObject();
 		if (conn == null)
@@ -266,11 +297,11 @@ public class PostgresImpl {
 			stmt = conn.createStatement();
 			rs = stmt.executeQuery(sql);
 			while (rs.next()) {
-				jobj.put("id", rs.getInt("event"));
+				jobj.put("id", rs.getInt("id"));
 				jobj.put("title", rs.getString("title"));
 				jobj.put("firstname", rs.getString("firstname"));
 				jobj.put("lastname", rs.getString("lastname"));
-				jobj.put("dob", rs.getDate("dob"));
+				jobj.put("dob", rs.getString("dob"));
 				jobj.put("maritalstatus", rs.getString("maritalstatus"));
 				jobj.put("emptype", rs.getString("emptype"));
 				jobj.put("pincode", rs.getString("pincode"));
@@ -278,11 +309,12 @@ public class PostgresImpl {
 				jobj.put("industry", rs.getString("industry"));
 				jobj.put("annualincome", rs.getDouble("annualincome"));
 				jobj.put("loanamount", rs.getDouble("loanamount"));
-				jobj.put("email", rs.getString("loanamount"));
-				jobj.put("status", rs.getDouble("status"));
-				jobj.put("passportnumber", rs.getString("passportnumber"));
-				jobj.put("passportdate", rs.getDate("passportdate"));
+				jobj.put("email", rs.getString("email"));
+				jobj.put("status", rs.getString("status"));
+				jobj.put("passportnumber", ""); 
+				jobj.put("passportdate", "");
 				jobj.put("transactionid", rs.getInt("transactionid"));
+				jobj.put("timestamp", rs.getString("timestamp"));
 				break;
 			}
 			rs.close();
@@ -318,25 +350,39 @@ public class PostgresImpl {
 				+ "email= %s, "
 				+ "passportnumber = %s, "
 				+ "passportdate = %s, "
-				+ "status = %s  "
-				+ "WHERE "
-				+ "applicationid = %s";
+				+ "status = %s,  "
+				+ "timestamp = %s"
+				+ " WHERE "
+				+ " id = %s";
 		String quote = "'";
+		String dt=null;
+		String pdt =null;
+		
+		if (JSONUtils.isNull(applicationData.get("dob")))
+			dt = null;
+		else dt =quote+applicationData.get("dob")+quote;
+
+		if (JSONUtils.isNull(applicationData.get("passportdate")))
+			pdt = null;
+		else pdt =quote+applicationData.get("passportdate")+quote;				
+				
 		sql = String.format(sql, 
-				quote + applicationData.getString("status") + quote ,
-				quote + applicationData.getString("firstname") + quote ,
-				quote + applicationData.getString("lastname") + quote ,
-				quote + applicationData.getString("dob") + quote ,
-				quote + applicationData.getString("maritalstatus") + quote ,
-				quote + applicationData.getString("pincode") + quote ,
-				quote + applicationData.getString("address") + quote ,
-				quote + applicationData.getString("emptype") + quote ,
-				quote + applicationData.getString("industry") + quote ,
-				quote + applicationData.getDouble("annualincome") + quote ,
-				quote + applicationData.getDouble("loanamount") + quote ,
-				quote + applicationData.getString("email") + quote ,
-				quote + applicationData.getString("passportnumber") + quote ,
-				quote + applicationData.getString("passportdate") + quote ,
+				checkNull( applicationData.getString("title") ) ,
+				checkNull( applicationData.getString("firstName") ) ,
+				checkNull( applicationData.getString("lastName") ) ,
+				dt ,
+				checkNull( applicationData.getString("maritalStatus") ) ,
+				checkNull( applicationData.getString("pincode") ) ,
+				checkNull( applicationData.getString("address") ) ,
+				checkNull( applicationData.getString("emptype") ) ,
+				checkNull( applicationData.getString("industry") ) ,
+				applicationData.getDouble("annualincome"),
+				applicationData.getDouble("loanamount"),
+				checkNull( applicationData.getString("email") ) ,
+				checkNull( applicationData.getString("passportnumber") ) ,
+				pdt ,
+				checkNull( applicationData.getString("status") ) ,
+				checkNull( applicationData.getString("timestamp") ),
 				applicationData.getString("id"));
 		System.out.println(sql);
 		executeSql(sql);
