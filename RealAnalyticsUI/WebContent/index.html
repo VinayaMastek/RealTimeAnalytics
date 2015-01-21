@@ -15,7 +15,7 @@
 	var applicationid = null;
 	var transactionid = null;
 	var socket = null;
-	
+	var ifExists = false;
 	// to disconnect from event api
 	$(document)
 			.ready(
@@ -49,7 +49,6 @@
 						var email = document.getElementById('email');
 						var annualAmt = document.getElementById('annualincome');
 						var loanAmt = document.getElementById('loanamount');
-						//var transactionid = "222";
 						var payload = {};
 						var passportdtl = document
 								.getElementById('PassportDTL');
@@ -143,7 +142,7 @@
 								'value' : annualAmt.value,
 								'tran' : transactionid
 							};
-							createEvent('change', payload);
+							createEvent('focus', payload);
 						});
 
 						annualAmt.addEventListener('blur', function(event) {
@@ -152,7 +151,7 @@
 								'value' : annualAmt.value,
 								'tran' : transactionid
 							};
-							createEvent('change', payload);
+							createEvent('blur', payload);
 						});
 
 						loanAmt.addEventListener('change', function(event) {
@@ -169,16 +168,14 @@
 							gosearch();
 						});
 
-						
 						//add event listener
 						saveappbtn.addEventListener('click', function(event) {
-							applicationSave();
+							applicationSave('Draft');
 						});
-
 						
 						//add event listener
 						finalizeappbtn.addEventListener('click', function(event) {
-							applicationFinalize();
+							applicationFinalize('Finalize');
 						});
 						
  						//add event listener
@@ -194,7 +191,6 @@
  
 					});
 
-	
 
 	$(function() {
 		$("#ApplicantDOB").datepicker();
@@ -230,7 +226,7 @@
 		openTran();
 		enableSocket();
 
-		trantxt.setAttribute('value', transactionid);
+		trantxt.innerHTML = transactionid;
 		applicationDiv.setAttribute('class', 'visible');	
 	}
 	
@@ -248,16 +244,14 @@
 		$
 		.ajax({
 			type : 'GET',
-			url : 'http://localhost:8080/EventProcessingAPI/rest/events/getapplication',
-			data : tran,
+			url : 'http://localhost:8080/EventProcessingAPI/rest/events/getapplication?transactionid=' + tran,
 			contentType : "application/json; charset=utf-8",
 			dataType : "json",
 			async : false,
 			success : function(data) {
-				console.log(data);
-				transactionid = data.transactionid;
-				enableSocket();
+				ifExists = true;
 				showdata(data);
+				enableSocket();
 			},
 			error : function(msg) {
 				alert(msg.responseText);
@@ -268,11 +262,52 @@
 	
 	
 	function showdata(data){
-		document.getElementById("ApplicantFName").setAttribute("value",	data.firstname);
-		document.getElementById("ApplicantLName").setAttribute("value",	data.lastname);
+		var applicationDiv = document.getElementById('application');
+		applicationDiv.setAttribute('class', 'visible');
+		transactionid = data.transactionid;
+		applicationid = data.id;
+		
+		var trantxt= document.getElementById('transactiontxt');
+		trantxt.innerHTML = transactionid;
+		
+		document.getElementById('select_title').value=	data.title;
+		document.getElementById('ApplicantFName').setAttribute('value',	checkNull(data.firstname));
+		document.getElementById('ApplicantLName').setAttribute('value',	checkNull(data.lastname));
+		
+		document.getElementById('pincode').setAttribute('value',	checkNull(data.pincode));
+		document.getElementById('address').setAttribute('value',	checkNull(data.address));
+		document.getElementById('annualincome').setAttribute('value',	checkNull(data.annualincome));
+		document.getElementById('loanamount').setAttribute('value',	checkNull(data.loanamount));
+		document.getElementById('email').setAttribute('value',	checkNull(data.email));
+		
+		
+		
+		document.getElementById('passportNO').setAttribute('value',	checkNull(data.passportnumber));
+		document.getElementById('passportDT').setAttribute('value',	checkNull(data.passportdate));
+		
+		document.getElementById("select_marital").value = data.maritalstatus;
+		document.getElementById("select_emptype").value = data.emptype;
+		document.getElementById("select_industry").value = data.industry;
+
+		/* 
+		$("#ApplicantDOB").datepicker();
+		  // more code
+		$("#ApplicantDOB").datepicker('setDate', '01/06/2014');
+		
+		  var dob = document.getElementById('ApplicantDOB');
+		dob.datepicker();
+		dob.datepicker({dateFormat:"yyyy-MM-dd",}
+				
+				'setDate', new Date(data.dob,'yyyy-MM-dd')); */
+
 	}
 
-	
+	function checkNull(value)
+	{
+		if ((value == "") || (value == null) || (typeof value == "undefined"))
+			return null;
+		else return value;
+	}
 	
 	function openTran() {
 		if (transactionid != null)
@@ -287,10 +322,7 @@
 					async : false,
 					success : function(data) {
 						console.log(data);
-
-						//var jsonData = $.parseJSON(data); //if data is not json
 						transactionid = data.tranid;
-
 					},
 					error : function(msg) {
 						alert(msg.responseText);
@@ -391,50 +423,53 @@
 
 	}
 
-	function applicationSave() {
+	function applicationSave(status) {
 		var applicationObj = {};
-		applicationObj['title'] = $(this).attr('select_title').options[$(this).attr('select_title').selectedIndex].text;
-		applicationObj['lastName'] = $(this).attr('ApplicantLName').value;
-		applicationObj['firstName'] = $(this).attr('ApplicantFName').value;
+		var passno =null;
+		var pdt = null;
+		var dt =null;
+		
+		applicationObj['title'] = document.getElementById('select_title').value; 
+	//		$(this).attr('select_title').options[$(this).attr('select_title').selectedIndex];
+		applicationObj['firstName'] = checkNull(document.getElementById('ApplicantFName').value);
+		applicationObj['lastName'] = checkNull(document.getElementById('ApplicantLName').value);
 
-		var st = $(this).attr('ApplicantDOB').value;
-		var pattern = /(\d{2})\/(\d{2})\/(\d{4})/;
-		var dt = new Date(st.replace(/(\d{2})\/(\d{2})\/(\d{4})/, '$3-$2-$1'));
-		//applicationObj['dob'] = dt.toISOString()
-		applicationObj['dob'] = dt;
-		applicationObj['maritalStatus'] = $(this).attr('select_marital').options[$(
-				this).attr('select_marital').selectedIndex].text;
-
-		applicationObj['pincode'] = $(this).attr('pincode').value;
-		applicationObj['address'] = $(this).attr('address').value;
-		applicationObj['emptype'] = $(this).attr('select_emptype').options[$(
-				this).attr('select_emptype').selectedIndex].text;
-		applicationObj['industry'] = $(this).attr('select_industry').options[$(
-				this).attr('select_industry').selectedIndex].text;
-		applicationObj['email'] = $(this).attr('email').value;
-		applicationObj['annualincome'] = $(this).attr('annualincome').value;
-		applicationObj['loanamount'] = $(this).attr('loanamount').value;
-		
-		var passno = null;
-		if ($(this).attr('PassportNO').value !=null)
-				passno =$(this).attr('PassportNO').value;
-		
-		applicationObj['passportnumber'] = passno;
-		
-		
-		var st = $(this).attr('PassportDT').value;
-		pdt = null;
-		
-		if (st != null){
+		var st = checkNull(document.getElementById('ApplicantDOB').value);
+		if (st !=null)
+		{
 			var pattern = /(\d{2})\/(\d{2})\/(\d{4})/;
-			var pdt = new Date(st.replace(/(\d{2})\/(\d{2})\/(\d{4})/, '$3-$2-$1'));
+			dt = new Date(st.replace(/(\d{2})\/(\d{2})\/(\d{4})/, '$3-$2-$1'));
+		}
+		
+		applicationObj['dob'] = dt;
+		applicationObj['maritalStatus'] = document.getElementById('select_marital').value;
+		applicationObj['pincode'] = checkNull(document.getElementById('pincode').value);
+		applicationObj['address'] = checkNull(document.getElementById('address').value);
+		applicationObj['emptype'] = document.getElementById('select_emptype').value;
+		applicationObj['industry'] = document.getElementById('select_industry').value;
+		applicationObj['email'] = checkNull(document.getElementById('email').value);
+		applicationObj['annualincome'] = checkNull(document.getElementById('annualincome').value);
+		applicationObj['loanamount'] = checkNull(document.getElementById('loanamount').value);
+		applicationObj['timestamp']=Date.now();
+		applicationObj['passportnumber'] = checkNull(document.getElementById('PassportNO').value);
+		
+		st = checkNull(document.getElementById('PassportDT').value);
+		if (st !=null){
+			var pattern = /(\d{2})\/(\d{2})\/(\d{4})/;
+			pdt = new Date(st.replace(/(\d{2})\/(\d{2})\/(\d{4})/, '$3-$2-$1'));
 		}	
-				
-		//applicationObj['dob'] = dt.toISOString()
 		applicationObj['passportdate'] = pdt;
 		applicationObj['transactionid'] = transactionid;
-		applicationObj['status'] = 'S';
+		
+		
+		if (status == 'Draft')
+			applicationObj['status'] = 'S';
+		else applicationObj['status'] = 'F';
+		
 		console.log(applicationObj);
+		if (!ifExists)
+		{
+			ifExists = true;
 		$
 		.ajax({
 			type : 'POST',
@@ -447,6 +482,22 @@
 				alert(msg.responseText);
 			}
 		});
+		} else
+		{
+			applicationObj['id'] = applicationid;
+			$
+			.ajax({
+				type : 'POST',
+				url : 'http://localhost:8080/EventProcessingAPI/rest/events/applicationupdt',
+				data : JSON.stringify(applicationObj),
+				contentType : "application/json; charset=utf-8",
+				dataType : "json",
+				async : true,
+				error : function(msg) {
+					alert(msg.responseText);
+				}
+			});
+		}
 	}
 	
 	function applicationFinalize() {
@@ -470,34 +521,8 @@
 		
 	
 </script>
-<script type="text/javascript">
-	$(document).ready(function() {
-		//  When user clicks on tab, this code will be executed
-
-		$("#tabs li").click(function() {
-			//  First remove class "active" from currently active tab
-			$("#tabs li").removeClass('tabactive');
-
-			//  Now add class "active" to the selected/clicked tab
-			$(this).addClass("tabactive");
-
-			//  Hide all tab content
-			$(".tab_content").hide();
-
-			//  Here we get the href value of the selected tab
-			var selected_tab = $(this).find("a").attr("href");
-
-			//  Show the selected tab content
-			$(selected_tab).fadeIn();
-
-			//  At the end, we add return false so that the click on the link is not executed
-			return false;
-		});
-	});
-</script>
 
 </head>
-
 <body>
 	<form id="quoteform" name="quoteform">
 		<div class="wrapper">
@@ -542,7 +567,7 @@
 								<button id="newAppBtn" type="button" tabindex="1" class="submit"
 									value="newapp">New Loan Application</button>
 
-								<button id="searchBtn" type="button" tabindex="1" class="submit"
+								<button id="searchBtn" type="button" tabindex="2" class="submit"
 									value="search">Retrieve Existing Application</button>
 
 							</div>
@@ -555,9 +580,9 @@
 								Application</label>
 							<div class="MT1">
 								<div class=" mediumW pull-left MR5">
-									<input id="gotran" type="search" class="input_full">
+									<input id="gotran" type="search" class="input_full" tabindex="1">
 								</div>
-								<button id="goBtn" type="button" tabindex="1" class="submit"
+								<button id="goBtn" type="button" tabindex="2" class="submit"
 									value="go">GO</button>
 							</div>
 							<div class="content-separator"></div>
@@ -570,9 +595,12 @@
 								<h2>All About You</h2>
 								<div class="MT1">
 									<label for="Transaction" class="bold">Your Transaction
-										Number is : </label> <input type="text" id="transactiontxt"
+										Number is : </label> 
+<!-- 								 <input type="text" id="transactiontxt"
 										name="transactiontxt" tabindex="12" />
-								</div>
+ -->
+ 									<label for="Transaction" class="bold" id="transactiontxt"></label>
+ 								</div>
 							</div>
 
 							<div class="formElement">
@@ -693,7 +721,7 @@
 									<label class="bold" for="ApplicantName"><span
 										class="mandatorStar">*</span> Annual Income</label>
 									<div class="MT1">
-										<input type="text" class="input_full_wrap pull-left"
+										<input type="text" class="input_full pull-left"
 											tabindex="10" name="annualincome" id="annualincome">
 									</div>
 								</div>
@@ -702,16 +730,16 @@
 									<label class="bold" ><span
 										class="mandatorStar">*</span> Loan Amount</label>
 									<div class="MT1">
-										<input type="text" class="input_full_wrap pull-left"
-											tabindex="10" name="loanamount" id="loanamount">
+										<input type="text" class="input_full pull-left"
+											tabindex="11" name="loanamount" id="loanamount">
 									</div>
 								</div>
-
+								<div class="CL"></div>
 								<div class="mediumW pull-left MR5">
 									<label class="bold" for="ApplicantName"><span
 										class="mandatorStar">*</span> Email</label>
 									<div class="MT1">
-										<input type="text" class="input_full pull-left" tabindex="11"
+										<input type="text" class="input_full pull-left" tabindex="12"
 											name="email" id="email">
 									</div>
 								</div>
@@ -726,7 +754,7 @@
 										class="mandatorStar">*</span> Passport Number &nbsp;</label>
 									<div class="MT1">
 										<input type="text" id="PassportNO" name="ApplicantFName"
-											tabindex="12" class="input_full" />
+											tabindex="13" class="input_full" />
 									</div>
 								</div>
 								<div class="MT1">
@@ -735,7 +763,7 @@
 											class="mandatorStar">*</span>Issue Date &nbsp;</label>
 										<div class="MT1">
 											<input type="text" class="input_full_wrap pull-left"
-												tabindex="13" name="PassportDT" id="PassportDT" /> <span
+												tabindex="14" name="PassportDT" id="PassportDT" /> <span
 												class="hint"> DD/MM/YYYY </span>
 										</div>
 									</div>
@@ -749,10 +777,10 @@
 
 							<div class="content-separator"></div>
 							<div class="MT1">
-								<button id="saveappBtn" type="button" tabindex="14"
+								<button id="saveappBtn" type="button" tabindex="15"
 									class="loginBtn pull-Left" value="Save">Save Application</button>
 									
-								<button id="finalizeappBtn" type="button" tabindex="19"
+								<button id="finalizeappBtn" type="button" tabindex="16"
 									class="loginBtn pull-Left" value="Commit">Finalize Application</button>
 									
 							</div>

@@ -51,8 +51,8 @@ REATE TABLE application
   passportdate date,
   status character(1), -- S - Saved...
   emptype character varying(20),
-  "timestamp" timestamp without time zone,
-  transactionid integer
+  transactionid integer,
+  "timestamp" character varying(30)
 )
 WITH (
   OIDS=FALSE
