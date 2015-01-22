@@ -58,8 +58,9 @@ public class EmailNameChangeBolt extends BaseRichBolt {
 					+ " First Name changed after Email where Firstname : "
 					+ value;
 
+			emailName.remove(session);
 			this.collector
-					.emit(new Values(session, "EmailNameChange", desc, 0L,"NOACTION"));
+					.emit(new Values(session, "EmailNameChange", desc, 0L,"INCREASE_RISK"));
 		}
 	}
 
