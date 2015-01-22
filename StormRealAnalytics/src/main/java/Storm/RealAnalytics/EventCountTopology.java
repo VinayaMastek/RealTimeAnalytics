@@ -27,7 +27,10 @@ public class EventCountTopology {
     
     private static final String STAT_BOLT_ID = "stat_blot";
     private static final String STAT_BOLT_ID_EVTN2 = "stat_blot2";
-        private static final String STAT_BOLT_ID_EVTN3 = "stat_blot3";
+    private static final String STAT_BOLT_ID_EVTN3 = "stat_blot3";
+    private static final String STAT_BOLT_ID_EVTN4 = "stat_blot4";
+
+    private static final String TIME_SPENT_BOLT_ID = "timespent_blot";
 
     
     private static final String TOPOLOGY_NAME = "event-count-topology";
@@ -54,7 +57,10 @@ public class EventCountTopology {
         StatBolt sb = new StatBolt();
         StatBolt sb2 = new StatBolt();
         StatBolt sb3 = new StatBolt();
+        StatBolt sb4 = new StatBolt();
 
+        TimeSpentBolt tsb = new TimeSpentBolt();
+        
         EmitEventBolt emitEventBolt  = new EmitEventBolt();
 
         TopologyBuilder builder = new TopologyBuilder();
@@ -93,14 +99,21 @@ public class EventCountTopology {
         .globalGrouping(TOOMANYNAMECHANGE_BOLT_ID);
 
         
+        builder.setBolt(TIME_SPENT_BOLT_ID, tsb)
+        .globalGrouping(EVENT_SPOUT_ID);
+
+        
         builder.setBolt(STAT_BOLT_ID, sb)
         .globalGrouping(COUNT_BOLT_ID);      
 
-/*        builder.setBolt(STAT_BOLT_ID_EVTN2, sb2)
+       builder.setBolt(STAT_BOLT_ID_EVTN2, sb2)
         .globalGrouping(EMAILNAMECHANGE_BOLT_ID);
-*/
+
         builder.setBolt(STAT_BOLT_ID_EVTN3, sb3)
         .globalGrouping(TOOMANYNAMECHANGE_BOLT_ID);
+
+        builder.setBolt(STAT_BOLT_ID_EVTN4, sb4)
+        .globalGrouping(TIME_SPENT_BOLT_ID);
 
         builder.setBolt(EMIT_BOLT_ID, emitEventBolt)
         .globalGrouping(TOOMANYNAMECHANGE_BOLT_ID);

@@ -45,7 +45,7 @@ public class TooManyNameChangeBolt extends BaseRichBolt {
 
 				if (count > 2) {
 					String desc = "In the " + session + " : "
-							+ "firstname was changed more then " + count
+							+ "firstname was changed more than " + count
 							+ "times";
 					System.out.println(desc);
 					eventType = "TooManyNameChange";
