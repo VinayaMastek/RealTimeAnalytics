@@ -187,13 +187,12 @@
 						searchbtn.addEventListener('click', function(event) {
 							search();
 						});
- 
- 
 					});
 
 
 	$(function() {
 		$("#ApplicantDOB").datepicker();
+		$( "#ApplicantDOB" ).datepicker( "option", "dateFormat", "dd/mm/yy" );
 	});
 
 	$(function() {
@@ -244,7 +243,7 @@
 		$
 		.ajax({
 			type : 'GET',
-			url : 'http://localhost:8080/EventProcessingAPI/rest/events/getapplication?transactionid=' + tran,
+			url : 'http://localhost:8080/RealAnalyticsUI/rest/events/getapplication?transactionid=' + tran,
 			contentType : "application/json; charset=utf-8",
 			dataType : "json",
 			async : false,
@@ -280,25 +279,18 @@
 		document.getElementById('loanamount').setAttribute('value',	checkNull(data.loanamount));
 		document.getElementById('email').setAttribute('value',	checkNull(data.email));
 		
-		
-		
-		document.getElementById('passportNO').setAttribute('value',	checkNull(data.passportnumber));
-		document.getElementById('passportDT').setAttribute('value',	checkNull(data.passportdate));
-		
 		document.getElementById("select_marital").value = data.maritalstatus;
 		document.getElementById("select_emptype").value = data.emptype;
 		document.getElementById("select_industry").value = data.industry;
 
-		/* 
+
 		$("#ApplicantDOB").datepicker();
-		  // more code
-		$("#ApplicantDOB").datepicker('setDate', '01/06/2014');
-		
-		  var dob = document.getElementById('ApplicantDOB');
-		dob.datepicker();
-		dob.datepicker({dateFormat:"yyyy-MM-dd",}
-				
-				'setDate', new Date(data.dob,'yyyy-MM-dd')); */
+		$( "#ApplicantDOB" ).datepicker( "option", "dateFormat", "dd/mm/yy" );
+		$("#ApplicantDOB").datepicker("setDate", new Date(data.dob));
+
+		document.getElementById('passportNO').setAttribute('value',	checkNull(data.passportnumber));
+		document.getElementById('passportDT').setAttribute('value',	checkNull(data.passportdate));
+	
 
 	}
 
@@ -430,19 +422,18 @@
 		var dt =null;
 		
 		applicationObj['title'] = document.getElementById('select_title').value; 
-	//		$(this).attr('select_title').options[$(this).attr('select_title').selectedIndex];
 		applicationObj['firstName'] = checkNull(document.getElementById('ApplicantFName').value);
 		applicationObj['lastName'] = checkNull(document.getElementById('ApplicantLName').value);
 
 		var st = checkNull(document.getElementById('ApplicantDOB').value);
-		if (st !=null)
+ 		if (st !=null)
 		{
 			var pattern = /(\d{2})\/(\d{2})\/(\d{4})/;
 			dt = new Date(st.replace(/(\d{2})\/(\d{2})\/(\d{4})/, '$3-$2-$1'));
 		}
-		
-		applicationObj['dob'] = dt;
-		applicationObj['maritalStatus'] = document.getElementById('select_marital').value;
+ 		
+ 		applicationObj['dob'] = st;
+ 		applicationObj['maritalStatus'] = document.getElementById('select_marital').value;
 		applicationObj['pincode'] = checkNull(document.getElementById('pincode').value);
 		applicationObj['address'] = checkNull(document.getElementById('address').value);
 		applicationObj['emptype'] = document.getElementById('select_emptype').value;
@@ -473,7 +464,7 @@
 		$
 		.ajax({
 			type : 'POST',
-			url : 'http://localhost:8080/EventProcessingAPI/rest/events/applicationsave',
+			url : 'http://localhost:8080/RealAnalyticsUI/rest/events/applicationsave',
 			data : JSON.stringify(applicationObj),
 			contentType : "application/json; charset=utf-8",
 			dataType : "json",
@@ -488,7 +479,7 @@
 			$
 			.ajax({
 				type : 'POST',
-				url : 'http://localhost:8080/EventProcessingAPI/rest/events/applicationupdt',
+				url : 'http://localhost:8080/RealAnalyticsUI/rest/events/applicationupdt',
 				data : JSON.stringify(applicationObj),
 				contentType : "application/json; charset=utf-8",
 				dataType : "json",
@@ -508,7 +499,7 @@
 		$
 		.ajax({
 			type : 'POST',
-			url : 'http://localhost:8080/EventProcessingAPI/rest/events/applicationfinalize',
+			url : 'http://localhost:8080/RealAnalyticsUI/rest/events/applicationfinalize',
 			data : JSON.stringify(applicationObj),
 			contentType : "application/json; charset=utf-8",
 			dataType : "json",
