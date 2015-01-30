@@ -29,13 +29,15 @@ public class EventCountTopology {
     private static final String STAT_BOLT_ID_EVTN2 = "stat_blot2";
     private static final String STAT_BOLT_ID_EVTN3 = "stat_blot3";
     private static final String STAT_BOLT_ID_EVTN4 = "stat_blot4";
-
+    private static final String STAT_BOLT_ID_EVTN5 = "stat_blot5";
+    
     private static final String TIME_SPENT_BOLT_ID = "timespent_blot";
-
+    private static final String TIME_SPENT_AMT_BOLT_ID="timespent_amt_blot";
     
     private static final String TOPOLOGY_NAME = "event-count-topology";
 
     public final static String WEBSERVER = "http://localhost:8080/EventProcessingAPI/rest/events/countUpdt";
+//    public final static String WEBSERVER = "http://mastekinnovation.com:8080/EventProcessingAPI/rest/events/countUpdt";
 	public final static long DOWNLOAD_TIME = 100;
 	
     
@@ -58,8 +60,11 @@ public class EventCountTopology {
         StatBolt sb2 = new StatBolt();
         StatBolt sb3 = new StatBolt();
         StatBolt sb4 = new StatBolt();
+        StatBolt sb5 = new StatBolt();
 
         TimeSpentBolt tsb = new TimeSpentBolt();
+        TimeSpentOnAmountBolt tsAmtb = new TimeSpentOnAmountBolt();
+
         
         EmitEventBolt emitEventBolt  = new EmitEventBolt();
 
@@ -102,6 +107,9 @@ public class EventCountTopology {
         builder.setBolt(TIME_SPENT_BOLT_ID, tsb)
         .globalGrouping(EVENT_SPOUT_ID);
 
+        builder.setBolt(TIME_SPENT_AMT_BOLT_ID, tsAmtb)
+        .globalGrouping(EVENT_SPOUT_ID);
+
         
         builder.setBolt(STAT_BOLT_ID, sb)
         .globalGrouping(COUNT_BOLT_ID);      
@@ -114,6 +122,9 @@ public class EventCountTopology {
 
         builder.setBolt(STAT_BOLT_ID_EVTN4, sb4)
         .globalGrouping(TIME_SPENT_BOLT_ID);
+
+        builder.setBolt(STAT_BOLT_ID_EVTN5, sb5)
+        .globalGrouping(TIME_SPENT_AMT_BOLT_ID);
 
         builder.setBolt(EMIT_BOLT_ID, emitEventBolt)
         .globalGrouping(TOOMANYNAMECHANGE_BOLT_ID);

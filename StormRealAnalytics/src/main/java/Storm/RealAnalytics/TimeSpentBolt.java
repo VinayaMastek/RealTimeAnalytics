@@ -66,14 +66,14 @@ public class TimeSpentBolt extends BaseRichBolt {
 		long diffInSeconds = TimeUnit.MILLISECONDS.toSeconds(duration)%60;
 		long diffInMinutes = TimeUnit.MILLISECONDS.toMinutes(duration)%60;
 		long diffInHours = TimeUnit.MILLISECONDS.toHours(duration);		
-		
-			String desc = "For Session : " + session
-					+ " Time Spent is : "
-					+ diffInHours +" Hours "+ diffInMinutes +" Minutes " + diffInSeconds + " Seconds ";
+	
+		String desc = "For Session : " + session
+				+ " Time Spent is : "
+				+ diffInHours +" Hours "+ diffInMinutes +" Minutes " + diffInSeconds + " Seconds ";
 
-			this.collector
-					.emit(new Values(session, "TimeSpent", desc, diffInHours,diffInMinutes,diffInSeconds,"TIMESPENT"));
-	}
+		this.collector
+				.emit(new Values(session, "TimeSpent", desc, diffInHours,diffInMinutes,diffInSeconds,"TIMESPENT"));
+}
 
 
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {

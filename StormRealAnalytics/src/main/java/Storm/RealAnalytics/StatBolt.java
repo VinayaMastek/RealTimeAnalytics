@@ -43,11 +43,13 @@ public class StatBolt extends BaseRichBolt {
 			if (tuple.contains("session"))
 			{
 				 session = tuple.getStringByField("session");
+	
 				 if (tuple.contains("action"))
 					 action=tuple.getStringByField("action");
 				 else
 					 action = "NOACTION";
 			}
+			
 			if (tuple.contains("eventoutput"))
 			{
 				 JSONObject js = (JSONObject) tuple.getValueByField("eventoutput");
@@ -56,9 +58,6 @@ public class StatBolt extends BaseRichBolt {
 				 session = js.getString("sessionid");
 			}
 
-			
-			
-			
 			String description = tuple.getStringByField("desc");
 			String content = "{ \"tran\": \"" + session + "\",\"msg\": \""
 					+ description +"\" ,\"action\": \""
