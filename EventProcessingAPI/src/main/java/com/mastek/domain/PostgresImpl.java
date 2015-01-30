@@ -5,8 +5,6 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class PostgresImpl {
@@ -158,34 +156,5 @@ public class PostgresImpl {
 			}
 	}
 
-	public JSONArray getEvents(String session) {
-		JSONArray results = new JSONArray();
-		JSONObject jobj = new JSONObject();
-
-		if (conn == null)
-			connect();
-
-		String sql = "";
-		ResultSet rs = null;
-		sql = "SELECT event, field, value, timestamp, sessionid FROM events";
-		try {
-			stmt = conn.createStatement();
-			rs = stmt.executeQuery(sql);
-			while (rs.next()) {
-				jobj.put("event", rs.getString("event"));
-				jobj.put("field", rs.getString("field"));
-				jobj.put("value", rs.getString("value"));
-				jobj.put("timestamp", rs.getString("timestamp"));
-				jobj.put("sessionid", rs.getString("sessionid"));
-				results.add(jobj);
-				jobj = new JSONObject();
-			}
-			rs.close();
-			stmt.close();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return results;
-	}
-
+	
 }

@@ -15,7 +15,8 @@
 	var accountid;
 	var owner;
 	var transactionid = null;
-
+	//var hostname = 'mastekinnovation.com:8080';
+	var hostname = 'localhost:8080';
 	$(document)
 			.ready(
 					function() {
@@ -24,60 +25,37 @@
 						var getQuotebtn = document.getElementById('GetQuote');
 
 						// Capture Change Event
-						var tranidvar = document
-								.getElementById('select_tran');
+						var tranidvar = document.getElementById('select_tran');
 
 						var totfieldchange = document
 								.getElementById('TotFieldChange');
-						
-						
-						var tothours = document
-						.getElementById('TotHours');
 
-						var totmin = document
-						.getElementById('TotMin');
-						var totsec = document
-						.getElementById('TotSec');
+						var tothours = document.getElementById('TotHours');
 
-						
+						var totmin = document.getElementById('TotMin');
+						var totsec = document.getElementById('TotSec');
+
 						var totamounttime = document
-						.getElementById('TotAmountTime');
+								.getElementById('TotAmountTime');
 						var totnameemail = document
-						.getElementById('TotNameEmail');
+								.getElementById('TotNameEmail');
 						var totnamechange = document
-						.getElementById('TotNameChange');
-						
-						
-						
-						
-						
+								.getElementById('TotNameChange');
+
 						//var transactionid = "222";
 						var payload = {};
-						var time=0;
+						var time = 0;
 						fetchTran();
 
+						tranidvar
+								.addEventListener(
+										'change',
+										function(event) {
+											transactionid = tranidvar.value;
+											console.log('Tran is'
+													+ transactionid);
 
-						tranidvar.addEventListener('change',
-								function(event) {
-
-							   transactionid=tranidvar.value;
-							   console.log('Tran is' + transactionid);
-					           var url = 'http://localhost:8080/MedicalTextAnalysis/rest/textanalysis/annotatePDFwithmedicalterms?files=D:/workspace/MedicalTextAnalysis/DocRepository/Test eSAR.pdf;';
-					            //var url = 'http://localhost:8080/MedicalTextAnalysis/rest/textanalysis/annotatePDFwithmedicalterms?files=https://www.dropbox.com/s/2560uwq4dnvlo8g/medic1.txt?dl=1;';
-					            jQuery.support.cors = true;
-					            $.ajax(
-					                {
-					                    type: 'GET',
-					                    url:url,
-					                    data: '{}',
-					                    contentType: 'application/json; charset=utf-8',
-					                    dataType: 'json',
-
-					                    error: function (data) {
-
-					                    	
-					                    	
-/*---*/					                    	
+											/*---*/
 											if ("WebSocket" in window) {
 												console
 														.log('WebSocket is supported by your browser.');
@@ -85,100 +63,143 @@
 														+ 'mastekinnovation.com:8080'
 														+ '/EventProcessingAPI/websocket/notifyAnnotation?transactionid=ad'
 														+ transactionid;
-					 */
-												 var serviceUrl = 'ws://'
-												 + 'localhost:8080'
-												 + '/EventProcessingAPI/websocket/notifyAnnotation?transactionid=ad'
-												 + transactionid;
-					 
-					 							console.log(serviceUrl);
-						 						var socket = new WebSocket(serviceUrl);
+												 */
+												var serviceUrl = 'ws://'
+														+ hostname
+														+ '/EventProcessingAPI/websocket/notifyAnnotation?transactionid=ad'
+														+ transactionid;
+
+												console.log(serviceUrl);
+												var socket = new WebSocket(
+														serviceUrl);
 												socket.onopen = function() {
-													console.log('Connection Established!');
+													console
+															.log('Connection Established!');
 												};
 
 												socket.onclose = function() {
-													console.log('Connection Closed!');
+													console
+															.log('Connection Closed!');
 												};
 
 												socket.onerror = function(error) {
-													console.log('Error Occured: ' + error);
+													console
+															.log('Error Occured: '
+																	+ error);
 												};
 
-												
-												
 												socket.onmessage = function(e) {
 													if (typeof e.data === "string") {
-														console.log('String message received: '
-																+ e.data);
+														console
+																.log('String message received: '
+																		+ e.data);
 
-														if ((e.data.indexOf("Connection") < 0) ) {
-															var json = JSON.parse(e.data);
-															
-															if (json.action != "NOACTION")
-															{
+														if ((e.data
+																.indexOf("Connection") < 0)) {
+															var json = JSON
+																	.parse(e.data);
 
-															console.log("json is " + json);
-															console.log("action is " + json.action);
-				  						                   	$('#eventlog > tbody:last').append('<tr>');
-										                	$('#eventlog > tbody:last').append('<td>' + json.msg+ '</td>');
-										                	$('#eventlog > tbody:last').append('<td>' + json.action+ '</td>');
-										                	$('#eventlog > tbody:last').append('</tr>');
+															if (json.action != "NOACTION") {
+
+																console
+																		.log("json is "
+																				+ json);
+																console
+																		.log("action is "
+																				+ json.action);
+																$(
+																		'#eventlog > tbody:last')
+																		.append(
+																				'<tr>');
+																$(
+																		'#eventlog > tbody:last')
+																		.append(
+																				'<td>'
+																						+ json.msg
+																						+ '</td>');
+																$(
+																		'#eventlog > tbody:last')
+																		.append(
+																				'<td>'
+																						+ json.action
+																						+ '</td>');
+																$(
+																		'#eventlog > tbody:last')
+																		.append(
+																				'</tr>');
+
+															} else {
+
+																totfieldchange.value = json.msg
+																		.split(":")[1]
+															}
+
+															if (json.action == "TIMESPENT") {
+																console
+																		.log("aaa "
+																				+ json.msg);
+																tothours.value = (json.msg
+																		.split("is :")[1])
+																		.split("Hours")[0];
+																totmin.value = (json.msg
+																		.split("is :")[1])
+																		.split("Hours")[1]
+																		.split("Minutes")[0];
+																totsec.value = (json.msg
+																		.split("is :")[1])
+																		.split("Hours")[1]
+																		.split("Minutes")[1]
+																		.split("Seconds")[0];
 
 															}
-															else {
-																
-																totfieldchange.value = json.msg.split(":")[1]
-															}
 															
-															if (json.action == "TIMESPENT")
-																{
-																	console.log("aaa "+ json.msg);
-																	tothours.value = (json.msg.split("is :")[1]).split("Hours")[0];
-																	totmin.value = (json.msg.split("is :")[1]).split("Hours")[1].split("Minutes")[0];
-																	totsec.value = (json.msg.split("is :")[1]).split("Hours")[1].split("Minutes")[1].split("Seconds")[0];
-																	
-																}
-															if (json.action == "APPUI_ACCEPT_PASSPORT")
-															{
-																totnamechange.value = json.msg.split("than ")[1].split("times")[0];
-																
+															if (json.action == "TIMESPENTAMT") {
+																console
+																		.log("amt time "
+																				+ json.msg);
+																totamounttime.value = (json.msg
+																		.split("is :")[1])
+																		.split("Hours")[0] +":"+ (json.msg
+																				.split("is :")[1])
+																				.split("Hours")[1]
+																				.split("Minutes")[0] + ":" + (json.msg
+																						.split("is :")[1])
+																						.split("Hours")[1]
+																						.split("Minutes")[1]
+																						.split("Seconds")[0];
 															}
-															
-															if (json.action == "INCREASE_RISK")
-															{
+
+															if (json.action == "APPUI_ACCEPT_PASSPORT") {
+																totnamechange.value = json.msg
+																		.split("than ")[1]
+																		.split("times")[0];
+
+															}
+
+															if (json.action == "INCREASE_RISK") {
 																totnameemail.value = "Yes - changed"
-																
+
 															}
 
-															
-															
-															}
+														}
 
 													} else if (e.data instanceof ArrayBuffer) {
-														console.log('ArrayBuffer received: '
-																+ e.data);
+														console
+																.log('ArrayBuffer received: '
+																		+ e.data);
 													} else if (e.data instanceof Blob) {
-														console.log('Blob received: ' + e.data);
+														console
+																.log('Blob received: '
+																		+ e.data);
 													} else
-														console.log('Unknown: ' + e.data);
+														console.log('Unknown: '
+																+ e.data);
 												};
 											}
 
-/*---*/					                    	
-					                    	
-					                    	
-					                    	
-					               }
-					                    });
+											/*---*/
 
-							
-							
-							
-						}); 
-
-						
-
+										});
 
 					});
 
@@ -234,36 +255,27 @@
 				.ajax({
 					type : 'GET',
 					//url : 'http://mastekinnovation.com:8080/EventProcessingAPI/rest/events/opentran',
-					url : 'http://localhost:8080/EventProcessingAPI/rest/events/fetchtran',
+					url : 'http://'+hostname+'/EventProcessingAPI/rest/events/fetchtran',
 					contentType : "application/json; charset=utf-8",
 					dataType : "json",
-					async : false,
+					async : true,
 					success : function(data) {
-						console.log("tttttt12345");
-						console.log(data["output"]);
-
-							var jsonData ; 
-							var data1=data["output"].split(",");
-						
+						var jsonData;
+						var data1 = data["output"].split(",");
 						var combo = document.getElementById("select_tran");
-						console.log(data1[0]);
-						     
-						for (i in data1)
-							{
+						for (i in data1) {
 							console.log(data1[i]);
 							jsonData = JSON.parse(data1[i])
-						    var option = document.createElement("option");
-						    option.text = jsonData["tran"];
-						    option.value = jsonData["tran"];
-						    try {
-						        combo.add(option, null); //Standard 
-						    }catch(error) {
-						        combo.add(option); // IE only
-						    }
-							
+							var option = document.createElement("option");
+							option.text = jsonData["tran"];
+							option.value = jsonData["tran"];
+							try {
+								combo.add(option, null); //Standard 
+							} catch (error) {
+								combo.add(option); // IE only
 							}
+						}
 						transactionid = data.tranid;
-
 					},
 					error : function(msg) {
 						alert(msg.responseText);
@@ -283,7 +295,7 @@
 				.ajax({
 					type : 'POST',
 					//url : 'http://mastekinnovation.com:8080/EventProcessingAPI/rest/events/eventpost',
-					url : 'http://localhost:8080/EventProcessingAPI/rest/events/eventpost',
+					url : 'http://'+hostname+'/EventProcessingAPI/rest/events/eventpost',
 					data : JSON.stringify(eventObj),
 					contentType : "application/json; charset=utf-8",
 					dataType : "json",
@@ -350,137 +362,123 @@
 
 <body>
 	<form id="adminform" name="adminform">
-			<!--Header Start Here-->
-			<div id="header">
+		<!--Header Start Here-->
+		<div id="header">
 
-				<div class="pull-left logo">
-					<a href="#">Monitoring</a>
-				</div>
-				<div class="pull-left navigation">
-					<div id="main-nav"></div>
-				</div>
-				<div class="pull-right userNav"></div>
-				<div id="main">
-					<div id="message1"></div>
-					<div id="message2"></div>
-					<table id="fields">
-					</table>
-				</div>
+			<div class="pull-left logo">
+				<a href="#">Monitoring</a>
 			</div>
-			<div class="content">
-				<div id="center-wrapper">
-					<div id="mySocket" class="sidebarLeft pull-left">
-						<h2 align="center">Event History</h2>
-     					<div class = "spacer"></div>
+			<div class="pull-left navigation">
+				<div id="main-nav"></div>
+			</div>
+			<div class="pull-right userNav"></div>
+			<div id="main">
+				<div id="message1"></div>
+				<div id="message2"></div>
+				<table id="fields">
+				</table>
+			</div>
+		</div>
+		<div class="content">
+			<div id="center-wrapper">
+				<div id="mySocket" class="sidebarLeft pull-left">
+					<h2 align="center">Event History</h2>
+					<div class="spacer"></div>
 
-			       			<table id="eventlog">
-		        	  		<tbody>
-		        	  		
-			        			<tr>
-			        			<th>Event</th>
-			        			<th>Action</th>
-			        			</tr>
-			        		</tbody>
-		        			</table>  		
-        				<div class = "spacer"></div>
+					<table id="eventlog">
+						<tbody>
 
+							<tr>
+								<th>Event</th>
+								<th>Action</th>
+							</tr>
+						</tbody>
+					</table>
+					<div class="spacer"></div>
+
+
+				</div>
+
+				<!--Main content start Here-->
+				<div class="centerContent pull-left">
+					<h1>Monitor Website events</h1>
+					<h2>Input Click Stream, Output Event Pattern, Recommendations</h2>
+
+					<div class="content-separator"></div>
+
+					<div class="formElement">
+						<label for="TransactionID" class="bold"><span
+							class="mandatorStar">*</span> Transaction ID&nbsp;</label>
+						<div class="MT1">
+							<div class=" mediumW pull-left MR5">
+								<select id="select_tran" name="select_tran" class="input_full"
+									tabindex="1">
+								</select> <span class="hint">Select ID</span>
+							</div>
+						</div>
+						<div class="content-separator"></div>
 
 					</div>
 
-					<!--Main content start Here-->
-					<div class="centerContent pull-left">
-						<h1>Monitor Website events</h1>
-						<h2>Input Click Stream, Output Event Pattern, Recommendations</h2>
-
-						<div class="formElement">
-							<label for="TransactionID" class="bold"><span
-								class="mandatorStar">*</span> Transaction ID&nbsp;</label>
-							<div class="MT1">
-								<div class=" mediumW pull-left MR5">
-									<select id="select_tran" name="select_tran"
-										class="input_full" tabindex="1">
-									</select> <span class="hint">Select ID</span>
-								</div>
+					<div class="formElement">
+						<label class="bold"> Total Field Changes </label>
+						<div class="MT1">
+							<div class=" mediumW pull-left MR5">
+								<input type="text" class="input_full_wrap pull-left"
+									tabindex="4" name="TotFieldChange" id="TotFieldChange">
 							</div>
 							<div class="CL"></div>
+							<div class="content-separator"></div>
 						</div>
+						<div class="CL"></div>
 
-						<div class="formElement">
-							<div class="mediumW pull-left MR5">
-								<label class="bold" for="TransactionID"><span
-									class="mandatorStar">*</span> Total Field Changes </label>
-								<div class="MT1">
-									<input type="text" class="input_full_wrap pull-left"
-										tabindex="4" name="TotFieldChange" id="TotFieldChange">
-
-								</div>
+						<label class="bold" for="TotalTimeSpent">Total Time Spent
+						</label>
+						<div class="MT1">
+							<div class=" mediumW pull-left">
+								<input type="text" class="input_full_wrap pull-left"
+									tabindex="4" name="TotHours" id="TotHours"> <span
+									class="hint">Hours</span>
+							</div>
+							<div class=" mediumW pull-left">
+								<input type="text" class="input_full_wrap pull-left"
+									tabindex="4" name="TotMin" id="TotMin"> <span
+									class="hint">Minutes</span>
 							</div>
 
-						
+							<div class=" mediumW pull-left">
+								<input type="text" class="input_full_wrap pull-left"
+									tabindex="4" name="TotSec" id="TotSec"> <span
+									class="hint">Seconds</span>
+							</div>
+							<div class="CL"></div>
+							<div class="content-separator"></div>
 
-						
+						</div>
+						<div class="CL"></div>
+
+						<label class="bold">Suspicious Activities </label>
+						<div class="MT1">
+
+							<div class=" mediumW pull-left">
+								<input type="text" class="input_full_wrap pull-left"
+									name="TotNameChange" id="TotNameChange"> <span
+									class="hint">Number of name change</span>
+							</div>
+
+							<div class=" mediumW pull-left">
+								<input type="text" class="input_full_wrap pull-left"
+									name="TotNameEmail" id="TotNameEmail"> <span
+									class="hint">Name changed after E-mail?</span>
+							</div>
+
+							<div class=" mediumW pull-left">
+								<input type="text" class="input_full_wrap pull-left"
+									name="TotAmountTime" id="TotAmountTime"> <span
+									class="hint">Time on Amount</span>
+							</div>
+						</div>
 					</div>
-
-						<div class="formElement">
-							<div class="mediumW pull-left MR5">
-								<label class="bold" for="TotalTimeSpent"><span
-									class="mandatorStar">*</span> Total Time Spent </label>
-								<div class="MT1">
-									<input type="text" class="input_full_wrap pull-left"
-										tabindex="4" name="TotHours" id="TotHours">
-										<span class="hint">Hours</span>
-								</div>
-								
-								<div class="MT1">
-									<input type="text" class="input_full_wrap pull-left"
-										tabindex="4" name="TotMin" id="TotMin">
-										<span class="hint">Minutes</span>
-
-								</div>
-								<div class="MT1">
-									<input type="text" class="input_full_wrap pull-left"
-										tabindex="4" name="TotSec" id="TotSec">
-										<span class="hint">Seconds</span>
-
-								</div>
-								
-							</div>
-
-						
-
-						
-
-							<div class="mediumW pull-left MR5">
-								<label class="bold" for="TransactionID"><span
-									class="mandatorStar">*</span> Suspicious Activities </label>
-								<div class="MT1">
-									<input type="text" class="input_full_wrap pull-left"
-										tabindex="4" name="TotNameChange" id="TotNameChange">
-										<span class="hint">Too many name changes - count</span>
-								</div>
-								
-								<div class="MT1">
-									<input type="text" class="input_full_wrap pull-left"
-										tabindex="4" name="TotNameEmail" id="TotNameEmail">
-										<span class="hint">Did Name changed after E-mail?</span>
-
-								</div>
-								<div class="MT1">
-									<input type="text" class="input_full_wrap pull-left"
-										tabindex="4" name="TotAmountTime" id="TotAmountTime">
-										<span class="hint">Long time spent on Amount - time</span>
-
-								</div>
-								
-							</div>
-
-						
-
-						
-					</div>
-
-
-
 				</div>
 			</div>
 		</div>

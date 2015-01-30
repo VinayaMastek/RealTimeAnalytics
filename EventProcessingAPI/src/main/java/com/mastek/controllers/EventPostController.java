@@ -130,14 +130,22 @@ public class EventPostController {
 			@Context HttpServletResponse servletResponse) {
 
 		JSONObject eventData = JSONObject.fromObject(eData);
+		
 		Session s = SessionRegistry.getTransaction((String) eventData
 				.get("tran"));
 		Session s1 = SessionRegistry.getTransaction("ad"+(String) eventData
 				.get("tran"));
 
-		echoTextMessage(s, eventData.toString(), true);
-		echoTextMessage(s1, eventData.toString(), true);
+		Session s2 = SessionRegistry.getTransaction("rule");
 
+		if (s !=null)
+			echoTextMessage(s, eventData.toString(), true);
+		if (s1 != null)
+			echoTextMessage(s1, eventData.toString(), true);
+		if (s2 !=null)
+			// For Mallik
+			echoTextMessage(s2, "rule1,rule2,rule3", true);
+			
 		System.out.println("Inside CountUpdt");
 
 	}
