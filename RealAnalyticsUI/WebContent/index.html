@@ -16,6 +16,17 @@
 	var transactionid = null;
 	var socket = null;
 	var ifExists = false;
+
+	var uiuri= 'localhost:8080/RealAnalyticsUI';
+	var eventuri ='localhost:8080/EventProcessingAPI';
+ 	 
+ 
+ /* 	var uiuri= 'mastekinnovation.com:8080/RealAnalyticsUI';
+ 	var eventuri ='mastekinnovation.com:8080/EventProcessingAPI';
+ */
+ 	/* 	var uiuri= '192.168.43.212:8080/RealAnalyticsUI';
+	var eventuri ='192.168.43.212:8080/EventProcessingAPI';
+   */
 	// to disconnect from event api
 	$(document)
 			.ready(
@@ -226,7 +237,32 @@
 		enableSocket();
 
 		trantxt.innerHTML = transactionid;
-		applicationDiv.setAttribute('class', 'visible');	
+		applicationDiv.setAttribute('class', 'visible');
+		
+		payload = {
+				'field' : 'platform',
+				'value' : navigator.platform,
+				'tran' : transactionid
+
+			};
+			createEvent('platform', payload);
+		
+			payload = {
+					'field' : 'geolocation',
+					'value' : navigator.geolocation,
+					'tran' : transactionid
+
+				};
+			createEvent('geoloacation', payload);	
+
+			payload = {
+					'field' : 'useragent',
+					'value' : navigator.userAgent,
+					'tran' : transactionid
+
+				};
+			createEvent('useragent', payload);	
+
 	}
 	
 	
@@ -243,7 +279,7 @@
 		$
 		.ajax({
 			type : 'GET',
-			url : 'http://localhost:8080/RealAnalyticsUI/rest/events/getapplication?transactionid=' + tran,
+			url : 'http://' +resturi + 'getapplication?transactionid=' + tran,
 			contentType : "application/json; charset=utf-8",
 			dataType : "json",
 			async : false,
@@ -278,11 +314,9 @@
 		document.getElementById('annualincome').setAttribute('value',	checkNull(data.annualincome));
 		document.getElementById('loanamount').setAttribute('value',	checkNull(data.loanamount));
 		document.getElementById('email').setAttribute('value',	checkNull(data.email));
-		
 		document.getElementById("select_marital").value = data.maritalstatus;
 		document.getElementById("select_emptype").value = data.emptype;
 		document.getElementById("select_industry").value = data.industry;
-
 
 		$("#ApplicantDOB").datepicker();
 		$( "#ApplicantDOB" ).datepicker( "option", "dateFormat", "dd/mm/yy" );
@@ -291,7 +325,6 @@
 		document.getElementById('passportNO').setAttribute('value',	checkNull(data.passportnumber));
 		document.getElementById('passportDT').setAttribute('value',	checkNull(data.passportdate));
 	
-
 	}
 
 	function checkNull(value)
@@ -308,7 +341,7 @@
 				.ajax({
 					type : 'GET',
 					//url : 'http://mastekinnovation.com:8080/EventProcessingAPI/rest/events/opentran',
-					url : 'http://localhost:8080/EventProcessingAPI/rest/events/opentran',
+					url : 'http://'+eventuri+'/rest/events/opentran',
 					contentType : "application/json; charset=utf-8",
 					dataType : "json",
 					async : false,
@@ -334,8 +367,7 @@
 					+ transactionid;
 			 */
 			var serviceUrl = 'ws://'
-					+ 'localhost:8080'
-					+ '/EventProcessingAPI/websocket/notifyAnnotation?transactionid='
+					+ eventuri+'/websocket/notifyAnnotation?transactionid='
 					+ transactionid;
 			socket = new WebSocket(serviceUrl);
 
@@ -361,6 +393,10 @@
 
 						console.log("json is " + json);
 						console.log("action is " + json.action);
+						
+						
+						
+						
 						if (json.action == "NOACTION") {
 							var countStr = json.msg.split(":");
 							document.getElementById("count")
@@ -403,7 +439,7 @@
 				.ajax({
 					type : 'POST',
 					//url :clos 'http://mastekinnovation.com:8080/EventProcessingAPI/rest/events/eventpost',
-					url : 'http://localhost:8080/EventProcessingAPI/rest/events/eventpost',
+					url : 'http://'+eventuri+'/rest/events/eventpost',
 					data : JSON.stringify(eventObj),
 					contentType : "application/json; charset=utf-8",
 					dataType : "json",
@@ -464,7 +500,7 @@
 		$
 		.ajax({
 			type : 'POST',
-			url : 'http://localhost:8080/RealAnalyticsUI/rest/events/applicationsave',
+			url : 'http://'+uiuri+'/rest/events/applicationsave',
 			data : JSON.stringify(applicationObj),
 			contentType : "application/json; charset=utf-8",
 			dataType : "json",
@@ -479,7 +515,7 @@
 			$
 			.ajax({
 				type : 'POST',
-				url : 'http://localhost:8080/RealAnalyticsUI/rest/events/applicationupdt',
+				url : 'http://'+uiuri+'/rest/events/applicationupdt',
 				data : JSON.stringify(applicationObj),
 				contentType : "application/json; charset=utf-8",
 				dataType : "json",
@@ -499,7 +535,7 @@
 		$
 		.ajax({
 			type : 'POST',
-			url : 'http://localhost:8080/RealAnalyticsUI/rest/events/applicationfinalize',
+			url : 'http://'+uiuri+'/rest/events/applicationfinalize',
 			data : JSON.stringify(applicationObj),
 			contentType : "application/json; charset=utf-8",
 			dataType : "json",
@@ -536,7 +572,7 @@
 			</div>
 			<div class="content">
 				<div id="center-wrapper">
-					<div id="mySocket" class="sidebarLeft pull-left">
+<!-- 					<div id="mySocket" class="sidebarLeft pull-left">
 						<h2 align="center">Notification</h2>
 						<div>
 							<div class="mediumW pull-left MR5">
@@ -548,7 +584,7 @@
 							</div>
 						</div>
 					</div>
-
+ -->
 					<!--Main content start Here-->
 					<div class="centerContent pull-left">
 						<h1>Loan Application</h1>
