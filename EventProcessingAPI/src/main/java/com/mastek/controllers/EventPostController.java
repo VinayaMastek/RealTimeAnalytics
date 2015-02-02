@@ -17,12 +17,18 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+
 import net.sf.json.JSONObject;
+
+import com.mastek.domain.DecisionEventEnum;
+import com.mastek.domain.DecisionStateEnum;
+import com.mastek.domain.LogicalDecision;
 import com.mastek.domain.PostgresImpl;
 
 @ServerEndpoint("/websocket/notifyAnnotation")
 @Path("/events")
 public class EventPostController {
+
 	public static class SessionRegistry {
 		static HashMap<String, Session> registry = new HashMap<String, Session>();
 
@@ -37,6 +43,7 @@ public class EventPostController {
 		}
 	}
 
+	
 	@Context
 	private HttpServletRequest request;
 
@@ -65,10 +72,11 @@ public class EventPostController {
 	@Path("/opentran")
 	public JSONObject OpenTran(@Context HttpServletResponse servletResponse) {
 		JSONObject outtran = new JSONObject();
-		System.out.println("Ha Ha Ha.... I am first");
 		int tranid = openTran();
-
 		outtran.put("tranid", tranid);
+	
+		LogicalDecision.newTransaction(tranid);
+		
 		return outtran;
 	}
 
@@ -133,19 +141,26 @@ public class EventPostController {
 		
 		Session s = SessionRegistry.getTransaction((String) eventData
 				.get("tran"));
+		
 		Session s1 = SessionRegistry.getTransaction("ad"+(String) eventData
 				.get("tran"));
 
 		Session s2 = SessionRegistry.getTransaction("rule");
-
+		
+		LogicalDecision.populateTransistion();
+		eventData.getString("action");
+		DecisionStateEnum newstate = LogicalDecision.transit(DecisionEventEnum.valueOf(eventData.getString("action")), eventData.getInt("tran"));
+		
 		if (s !=null)
 			echoTextMessage(s, eventData.toString(), true);
 		if (s1 != null)
 			echoTextMessage(s1, eventData.toString(), true);
-		if (s2 !=null)
+		
+		if (s2 !=null){
 			// For Mallik
-			echoTextMessage(s2, "rule1,rule2,rule3", true);
-			
+			System.out.println(newstate.name());
+			echoTextMessage(s2, newstate.name(), true);
+		}	
 		System.out.println("Inside CountUpdt");
 
 	}
