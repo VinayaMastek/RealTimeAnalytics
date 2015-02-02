@@ -43,7 +43,6 @@ public class StatBolt extends BaseRichBolt {
 			if (tuple.contains("session"))
 			{
 				 session = tuple.getStringByField("session");
-	
 				 if (tuple.contains("action"))
 					 action=tuple.getStringByField("action");
 				 else

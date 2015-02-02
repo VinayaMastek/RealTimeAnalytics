@@ -60,7 +60,7 @@ public class EmailNameChangeBolt extends BaseRichBolt {
 
 			emailName.remove(session);
 			this.collector
-					.emit(new Values(session, "EmailNameChange", desc, 0L,"INCREASE_RISK"));
+					.emit(new Values(session, "EmailNameChange", desc, 0L,"NAMECHANGEAFTEREMAIL"));
 		}
 	}
 
