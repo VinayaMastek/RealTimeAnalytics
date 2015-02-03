@@ -17,15 +17,17 @@
 	var socket = null;
 	var ifExists = false;
 
-/* 	var uiuri = 'localhost:8080/RealAnalyticsUI';
+ /*  
+ 	var uiuri = 'localhost:8080/RealAnalyticsUI';
 	var eventuri = 'localhost:8080/EventProcessingAPI';
- */
-	/* 	var uiuri= 'mastekinnovation.com:8080/RealAnalyticsUI';
-		var eventuri ='mastekinnovation.com:8080/EventProcessingAPI';
-	 */
-	var uiuri= '192.168.43.212:8080/RealAnalyticsUI';
-	var eventuri ='192.168.43.212:8080/EventProcessingAPI';
-	
+ */ 
+ 
+	var uiuri= 'mastekinnovation.com:8080/RealAnalyticsUI';
+	var eventuri ='mastekinnovation.com:8080/EventProcessingAPI';
+		
+	/* 		 	
+		var uiuri= '192.168.43.212:8080/RealAnalyticsUI';
+		var eventuri ='192.168.43.212:8080/EventProcessingAPI';	 */
 	// to disconnect from event api
 	$(document).ready(
 			function() {
@@ -199,7 +201,7 @@
 
 				//add event listener
 				finalizeappbtn.addEventListener('click', function(event) {
-					applicationFinalize('Finalize');
+					applicationSave('Finalize');
 				});
 
 				//add event listener
@@ -295,7 +297,7 @@
 		console.log("Transaction to be searched is : " + tran);
 		$.ajax({
 			type : 'GET',
-			url : 'http://' + resturi + 'getapplication?transactionid=' + tran,
+			url : 'http://' + uiuri + '/rest/events/getapplication?transactionid=' + tran,
 			contentType : "application/json; charset=utf-8",
 			dataType : "json",
 			async : false,
@@ -438,7 +440,6 @@
 		console.log(eventObj);
 		$.ajax({
 			type : 'POST',
-			//url :clos 'http://mastekinnovation.com:8080/EventProcessingAPI/rest/events/eventpost',
 			url : 'http://' + eventuri + '/rest/events/eventpost',
 			data : JSON.stringify(eventObj),
 			contentType : "application/json; charset=utf-8",
@@ -527,6 +528,14 @@
 					alert(msg.responseText);
 				}
 			});
+			payload = {
+					'field' : 'finalize',
+					'value' : 'commit',
+					'tran' : transactionid
+
+				};
+			createEvent('commit', payload);
+
 		}
 	}
 

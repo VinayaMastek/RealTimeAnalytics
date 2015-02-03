@@ -5,9 +5,12 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+
+import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.util.JSONUtils;
+import net.sf.json.xml.JSONTypes;
 
 public class PostgresImpl {
 	private Connection conn = null;
@@ -154,14 +157,15 @@ public class PostgresImpl {
 				jobj.put("dob", rs.getString("dob"));
 				jobj.put("maritalstatus", rs.getString("maritalstatus"));
 				jobj.put("emptype", rs.getString("emptype"));
-				jobj.put("pincode", rs.getString("pincode"));
-				jobj.put("address", rs.getString("address"));
-				jobj.put("industry", rs.getString("industry"));
+				
+				jobj.put("pincode", rs.getString("pincode").contains("null")?"":rs.getString("pincode"));
+				jobj.put("address", rs.getString("address").contains("null")?"":rs.getString("address"));
+				jobj.put("industry", rs.getString("industry").contains("null")?"":rs.getString("industry"));
 				jobj.put("annualincome", rs.getDouble("annualincome"));
 				jobj.put("loanamount", rs.getDouble("loanamount"));
-				jobj.put("email", rs.getString("email"));
-				jobj.put("status", rs.getString("status"));
-				jobj.put("passportnumber", ""); 
+				jobj.put("email", rs.getString("email").contains("null")?"":rs.getString("email"));
+				jobj.put("status", rs.getString("status")==null?"":rs.getString("status"));
+				jobj.put("passportnumber", rs.getString("passportnumber").contains("null")?"":rs.getString("passportnumber")); 
 				jobj.put("passportdate", "");
 				jobj.put("transactionid", rs.getInt("transactionid"));
 				jobj.put("timestamp", rs.getString("timestamp"));
@@ -213,7 +217,18 @@ public class PostgresImpl {
 
 		if (!JSONUtils.isNull(applicationData.get("passportdate")))
 			pdt ="to_date("+quote+applicationData.get("passportdate")+quote+",'dd/MM/yyyy')";				
-				
+
+	/*	Double income;
+		if (!JSONUtils.isNull(applicationData.get("annualincome"))) {
+			income=(double) 0;
+		} else income =  (Double) applicationData.get("annualincome");
+		
+		JSONUtils.doubleToString(d)
+		if (!JSONUtils.isNull(applicationData.get("loanamount"))) {
+			loan=(double) 0;
+		} else loan =  applicationData.getDouble("loanamount");
+		*/
+		
 		sql = String.format(sql, 
 				checkNull( applicationData.getString("title") ) ,
 				checkNull( applicationData.getString("firstName") ) ,
@@ -224,8 +239,8 @@ public class PostgresImpl {
 				checkNull( applicationData.getString("address") ) ,
 				checkNull( applicationData.getString("emptype") ) ,
 				checkNull( applicationData.getString("industry") ) ,
-				applicationData.getDouble("annualincome"),
-				applicationData.getDouble("loanamount"),
+				JSONUtils.isNull(applicationData.get("annualincome"))?null:applicationData.get("annualincome"),
+				JSONUtils.isNull(applicationData.get("loanamount"))?null:applicationData.get("loanamount"),
 				checkNull( applicationData.getString("email") ) ,
 				checkNull( applicationData.getString("passportnumber") ) ,
 				pdt ,
