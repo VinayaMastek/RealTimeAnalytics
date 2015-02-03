@@ -30,8 +30,8 @@ html {
 }
 
 body {
-	background:  #e2e4e6 ;/*url(../images/body_bg.png) repeat;*/
-	color: #FFFFFF;
+/* 	background:  #e2e4e6 url(../images/blue_bg.png) repeat;
+ */	color: #334;
 	font: normal 100% sans-serif;
 	line-height: 1.5;
 }
@@ -53,7 +53,6 @@ h1, h3, h4, h5, h6, p {
 	margin-top: 0;	 /* removing the top margin gets around an issue where margins can escape from their containing div. The remaining bottom margin will hold it away from any elements that follow. */
 	padding-right: 0px;
 	padding-left: 0px; /* adding the padding to the sides of the elements within the divs, instead of the divs themselves, gets rid of any box model math. A nested div with side padding can also be used as an alternate method. */
-	
 }
 
 
@@ -534,10 +533,11 @@ img.aligncenter{border:none}
 	min-height:71em;
 }
 .centerContent{
+	
 	width:43.0%; 
 	padding:.7em;
 	font:normal 75% Arial, Helvetica, sans-serif;
-	
+	background:url(../images/table_td_bg.png) repeat-x
 	 
 }
 .sidebarRight{

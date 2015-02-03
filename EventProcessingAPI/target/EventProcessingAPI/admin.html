@@ -5,8 +5,8 @@
 <title>Motor Insurance Quote</title>
 <link rel="stylesheet"
 	href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
-<link rel="stylesheet" type="text/css" media="all" href="css/style.css" />
 
+<link rel="stylesheet" type="text/css" media="all" href="css/style.css" />
 <script type="text/javascript" src="js/jquery.js"></script>
 <script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
 
@@ -15,7 +15,9 @@
 	var accountid;
 	var owner;
 	var transactionid = null;
-	var hostname = 'mastekinnovation.com:8080';
+	//var hostname = 'mastekinnovation.com:8080';
+	//var hostname = 'localhost:8080';
+	var hostname = '192.168.43.212:8080';
 	$(document)
 			.ready(
 					function() {
@@ -41,6 +43,8 @@
 						var totnamechange = document
 								.getElementById('TotNameChange');
 
+						var deviceTxt = document.getElementById('DeviceUsed');
+
 						//var transactionid = "222";
 						var payload = {};
 						var time = 0;
@@ -58,17 +62,10 @@
 											if ("WebSocket" in window) {
 												console
 														.log('WebSocket is supported by your browser.');
-												/* var serviceUrl = 'ws://'
-														+ 'mastekinnovation.com:8080'
-														+ '/EventProcessingAPI/websocket/notifyAnnotation?transactionid=ad'
-														+ transactionid;
-												 */
 												var serviceUrl = 'ws://'
 														+ hostname
 														+ '/EventProcessingAPI/websocket/notifyAnnotation?transactionid=ad'
 														+ transactionid;
-
-												console.log(serviceUrl);
 												var socket = new WebSocket(
 														serviceUrl);
 												socket.onopen = function() {
@@ -151,15 +148,41 @@
 																		.split("Seconds")[0];
 
 															}
-															if (json.action == "APPUI_ACCEPT_PASSPORT") {
+
+															if (json.action == "TIMESPENTONAMT") {
+																console
+																		.log("amt time "
+																				+ json.msg);
+																totamounttime.value = (json.msg
+																		.split("is :")[1])
+																		.split("Hours")[0]
+																		+ ":"
+																		+ (json.msg
+																				.split("is :")[1])
+																				.split("Hours")[1]
+																				.split("Minutes")[0]
+																		+ ":"
+																		+ (json.msg
+																				.split("is :")[1])
+																				.split("Hours")[1]
+																				.split("Minutes")[1]
+																				.split("Seconds")[0];
+															}
+
+															if (json.action == "TOOMANYNAMECHANGES") {
 																totnamechange.value = json.msg
 																		.split("than ")[1]
 																		.split("times")[0];
 
 															}
 
-															if (json.action == "INCREASE_RISK") {
+															if (json.action == "NAMECHANGEAFTEREMAIL") {
 																totnameemail.value = "Yes - changed"
+
+															}
+
+															if (json.action == "DEVICEUSED") {
+																deviceTxt.value = json.msg;
 
 															}
 
@@ -185,168 +208,53 @@
 
 					});
 
-	$(function() {
-		$('input[name="radioowner"]').change(function() {
-			owner = $(this).next('label').text();
-		})
-	});
-
-	$(function() {
-		$("#ApplicantDOB").datepicker();
-	});
-
-	$(function() {
-		$("#PassportDT").datepicker();
-	});
-
-	function toggle_visibility(id) {
-		document.getElementById(id).setAttribute("disabled", true);
-
-	}
-
-	function openWindow(windowUrl) {
-		jQuery.support.cors = true;
-		window.open(windowUrl, 'Connect', 'width=675,height=524').focus();
-	};
-
-	function getAuthorizeUrl(loginUrl, clientId, redirectUri) {
-		return loginUrl + 'services/oauth2/authorize?display=popup'
-				+ '&response_type=token&client_id=' + escape(clientId)
-				+ '&redirect_uri=' + escape(redirectUri);
-	}
-
-	function isTrue(value) {
-		if (typeof (value) == 'string') {
-			value = value.toLowerCase();
-		}
-		switch (value) {
-		case true:
-		case "true":
-		case 1:
-		case "1":
-		case "on":
-		case "yes":
-			return true;
-		default:
-			return false;
-		}
-	}
-
 	function fetchTran() {
-		$
-				.ajax({
-					type : 'GET',
-					//url : 'http://mastekinnovation.com:8080/EventProcessingAPI/rest/events/opentran',
-					url : 'http://'+hostname+'/EventProcessingAPI/rest/events/fetchtran',
-					contentType : "application/json; charset=utf-8",
-					dataType : "json",
-					async : true,
-					success : function(data) {
-						var jsonData;
-						var data1 = data["output"].split(",");
-						var combo = document.getElementById("select_tran");
-						for (i in data1) {
-							console.log(data1[i]);
-							jsonData = JSON.parse(data1[i])
-							var option = document.createElement("option");
-							option.text = jsonData["tran"];
-							option.value = jsonData["tran"];
-							try {
-								combo.add(option, null); //Standard 
-							} catch (error) {
-								combo.add(option); // IE only
-							}
-						}
-						transactionid = data.tranid;
-					},
-					error : function(msg) {
-						alert(msg.responseText);
-					}
+		$.ajax({
+			type : 'GET',
+			//url : 'http://mastekinnovation.com:8080/EventProcessingAPI/rest/events/opentran',
+			url : 'http://' + hostname
+					+ '/EventProcessingAPI/rest/events/fetchtran',
+			contentType : "application/json; charset=utf-8",
+			dataType : "json",
+			async : true,
+			success : function(data) {
+				var jsonData;
+				var data1 = data["output"].split(",");
+				var combo = document.getElementById("select_tran");
+				var len = data1.length;
+				for (i in data1) {
+					console.log(data1[i]);
+					jsonData = JSON.parse(data1[i])
+				
+					var option = document.createElement("option");
+					option.text = jsonData["tran"];
+					option.value = jsonData["tran"];
+					combo.appendChild(option);
+							
+					/* try {
+						combo.add(option, null); //Standard 
+					} catch (error) {
+						combo.add(option); // IE only
+					} */
+				}
+				
+				transactionid = data.tranid;
+				
+			},
+			error : function(msg) {
+				alert(msg.responseText);
+			}
 
-				});
-
-	}
-
-	function createEvent(event, payload) {
-		eventObj = {}
-		eventObj['event'] = event;
-		eventObj['timestamp'] = Date.now();
-		eventObj['payload'] = payload;
-		console.log(eventObj);
-		$
-				.ajax({
-					type : 'POST',
-					//url : 'http://mastekinnovation.com:8080/EventProcessingAPI/rest/events/eventpost',
-					url : 'http://'+hostname+'/EventProcessingAPI/rest/events/eventpost',
-					data : JSON.stringify(eventObj),
-					contentType : "application/json; charset=utf-8",
-					dataType : "json",
-					async : true,
-					error : function(msg) {
-						alert(msg.responseText);
-					}
-				});
-
-	}
-
-	function createContact() {
-		var contactObj = {};
-		contactObj['firstName'] = $(this).attr('ApplicantFName').value;
-		contactObj['lastName'] = $(this).attr('ApplicantLName').value;
-
-		var st = $(this).attr('ApplicantDOB').value;
-		var pattern = /(\d{2})\/(\d{2})\/(\d{4})/;
-		var dt = new Date(st.replace(/(\d{2})\/(\d{2})\/(\d{4})/, '$3-$2-$1'));
-
-		contactObj['birthdate'] = dt.toISOString()
-		contactObj['maritalStatus'] = $(this).attr('select_marital').options[$(
-				this).attr('select_marital').selectedIndex].text;
-		contactObj['Salutation'] = $(this).attr('select_title').options[$(this)
-				.attr('select_title').selectedIndex].text;
-		contactObj['zipcode'] = $(this).attr('pincode').value;
-		contactObj['emailid'] = $(this).attr('emailid').value;
-
-		client.create('Contact', contactObj, function(response) {
-			$('#message3').html('Contact Creation Successful');
-		}, function(error) {
-			console.log(error);
 		});
 
 	}
 </script>
-<script type="text/javascript">
-	$(document).ready(function() {
-		//  When user clicks on tab, this code will be executed
-
-		$("#tabs li").click(function() {
-			//  First remove class "active" from currently active tab
-			$("#tabs li").removeClass('tabactive');
-
-			//  Now add class "active" to the selected/clicked tab
-			$(this).addClass("tabactive");
-
-			//  Hide all tab content
-			$(".tab_content").hide();
-
-			//  Here we get the href value of the selected tab
-			var selected_tab = $(this).find("a").attr("href");
-
-			//  Show the selected tab content
-			$(selected_tab).fadeIn();
-
-			//  At the end, we add return false so that the click on the link is not executed
-			return false;
-		});
-	});
-</script>
-
 </head>
 
 <body>
 	<form id="adminform" name="adminform">
 		<!--Header Start Here-->
 		<div id="header">
-
 			<div class="pull-left logo">
 				<a href="#">Monitoring</a>
 			</div>
@@ -361,6 +269,7 @@
 				</table>
 			</div>
 		</div>
+
 		<div class="content">
 			<div id="center-wrapper">
 				<div id="mySocket" class="sidebarLeft pull-left">
@@ -435,7 +344,6 @@
 							</div>
 							<div class="CL"></div>
 							<div class="content-separator"></div>
-
 						</div>
 						<div class="CL"></div>
 
@@ -457,7 +365,16 @@
 							<div class=" mediumW pull-left">
 								<input type="text" class="input_full_wrap pull-left"
 									name="TotAmountTime" id="TotAmountTime"> <span
-									class="hint">Time - Amount</span>
+									class="hint">Time on Amount</span>
+							</div>
+						</div>
+						<div class="CL"></div>
+						<div class="content-separator"></div>
+						<label class="bold">Device Used</label>
+						<div class="MT1">
+							<div class=" mediumW pull-left">
+								<input type="text" class="input_full pull-left"
+									name="DeviceUsed" id="DeviceUsed"> <span class="hint">Device</span>
 							</div>
 						</div>
 					</div>

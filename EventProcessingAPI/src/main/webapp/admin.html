@@ -15,8 +15,9 @@
 	var accountid;
 	var owner;
 	var transactionid = null;
-	//var hostname = 'mastekinnovation.com:8080';
-	var hostname = 'localhost:8080';
+	var hostname = 'mastekinnovation.com:8080';
+	//var hostname = 'localhost:8080';
+	//var hostname = '192.168.43.212:8080';
 	$(document)
 			.ready(
 					function() {
@@ -220,19 +221,25 @@
 				var jsonData;
 				var data1 = data["output"].split(",");
 				var combo = document.getElementById("select_tran");
+				var len = data1.length;
 				for (i in data1) {
 					console.log(data1[i]);
 					jsonData = JSON.parse(data1[i])
+				
 					var option = document.createElement("option");
 					option.text = jsonData["tran"];
 					option.value = jsonData["tran"];
-					try {
+					combo.appendChild(option);
+							
+					/* try {
 						combo.add(option, null); //Standard 
 					} catch (error) {
 						combo.add(option); // IE only
-					}
+					} */
 				}
+				
 				transactionid = data.tranid;
+				
 			},
 			error : function(msg) {
 				alert(msg.responseText);
@@ -242,39 +249,12 @@
 
 	}
 </script>
-<script type="text/javascript">
-	$(document).ready(function() {
-		//  When user clicks on tab, this code will be executed
-
-		$("#tabs li").click(function() {
-			//  First remove class "active" from currently active tab
-			$("#tabs li").removeClass('tabactive');
-
-			//  Now add class "active" to the selected/clicked tab
-			$(this).addClass("tabactive");
-
-			//  Hide all tab content
-			$(".tab_content").hide();
-
-			//  Here we get the href value of the selected tab
-			var selected_tab = $(this).find("a").attr("href");
-
-			//  Show the selected tab content
-			$(selected_tab).fadeIn();
-
-			//  At the end, we add return false so that the click on the link is not executed
-			return false;
-		});
-	});
-</script>
-
 </head>
 
 <body>
 	<form id="adminform" name="adminform">
 		<!--Header Start Here-->
 		<div id="header">
-
 			<div class="pull-left logo">
 				<a href="#">Monitoring</a>
 			</div>
