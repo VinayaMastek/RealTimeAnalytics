@@ -33,6 +33,7 @@ public class EventCountTopology {
 	private static final String STAT_BOLT_ID_EVTN6 = "stat_blot6";
 	private static final String STAT_BOLT_ID_EVTN7 = "stat_blot7";
 	private static final String STAT_BOLT_ID_EVTN8 = "stat_blot8";
+	private static final String STAT_BOLT_ID_EVTN9 = "stat_blot9";
 
 	
 	private static final String TIME_SPENT_BOLT_ID = "timespent_blot";
@@ -41,11 +42,12 @@ public class EventCountTopology {
 	private static final String PASSPORTDTLSPROVIDED_BOLT_ID = "PassPortDtlsEnteredBolt";
 	private static final String DEVICEPROCESSING_BOLT_ID = "DeviceProcessingBolt";
 	private static final String PREMIUM_DEVICE_BOLT_ID = "PremiumDeviceBolt";
+	private static final String COMMIT_BOLT_ID = "CommitBolt";
 	private static final String TOPOLOGY_NAME = "event-count-topology";
 
-	public final static String WEBSERVER = "http://localhost:8080/EventProcessingAPI/rest/events/countUpdt";
-	// public final static String WEBSERVER =
-	// "http://mastekinnovation.com:8080/EventProcessingAPI/rest/events/countUpdt";
+	//public final static String WEBSERVER = "http://localhost:8080/EventProcessingAPI/rest/events/countUpdt";
+	public final static String WEBSERVER =
+					"http://mastekinnovation.com:8080/EventProcessingAPI/rest/events/countUpdt";
 	public final static long DOWNLOAD_TIME = 100;
 
 	public static void main(String[] args) throws Exception {
@@ -66,6 +68,7 @@ public class EventCountTopology {
 
 		DeviceProcessingBolt devBlot = new DeviceProcessingBolt();
 		PremiumDeviceBolt premDevBlot = new PremiumDeviceBolt();
+		CommitBolt commit =  new CommitBolt();
 
 		StatBolt sb = new StatBolt();
 		StatBolt sb2 = new StatBolt();
@@ -75,6 +78,7 @@ public class EventCountTopology {
 		StatBolt sb6 = new StatBolt();
 		StatBolt sb7 = new StatBolt();
 		StatBolt sb8 = new StatBolt();
+		StatBolt sb9 = new StatBolt();
 		
 		TimeSpentBolt tsb = new TimeSpentBolt();
 		TimeSpentOnAmountBolt tsAmtb = new TimeSpentOnAmountBolt();
@@ -111,6 +115,9 @@ public class EventCountTopology {
 		builder.setBolt(PREMIUM_DEVICE_BOLT_ID, premDevBlot).globalGrouping(
 				DEVICEPROCESSING_BOLT_ID);
 
+		builder.setBolt(COMMIT_BOLT_ID, commit).globalGrouping(
+				EVENT_SPOUT_ID);
+
 		builder.setBolt(STAT_BOLT_ID, sb).globalGrouping(COUNT_BOLT_ID);
 
 		builder.setBolt(STAT_BOLT_ID_EVTN2, sb2).globalGrouping(
@@ -134,6 +141,9 @@ public class EventCountTopology {
 		builder.setBolt(STAT_BOLT_ID_EVTN8, sb8).globalGrouping(
 				PREMIUM_DEVICE_BOLT_ID);
 		
+		builder.setBolt(STAT_BOLT_ID_EVTN9, sb9).globalGrouping(
+				COMMIT_BOLT_ID);
+
 		
 /*		builder.setBolt(POSTGRESLOG_BOLT_ID, pgBolt).globalGrouping(
 				COUNT_BOLT_ID);
