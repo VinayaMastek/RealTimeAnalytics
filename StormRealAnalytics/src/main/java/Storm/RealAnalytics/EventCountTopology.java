@@ -45,9 +45,9 @@ public class EventCountTopology {
 	private static final String COMMIT_BOLT_ID = "CommitBolt";
 	private static final String TOPOLOGY_NAME = "event-count-topology";
 
-	//public final static String WEBSERVER = "http://localhost:8080/EventProcessingAPI/rest/events/countUpdt";
-	public final static String WEBSERVER =
-					"http://mastekinnovation.com:8080/EventProcessingAPI/rest/events/countUpdt";
+/*	public final static String WEBSERVER = "http://localhost:8080/EventProcessingAPI/rest/events/countUpdt";
+*/	
+	public final static String WEBSERVER = "http://mastekinnovation.com:8080/EventProcessingAPI/rest/events/countUpdt";
 	public final static long DOWNLOAD_TIME = 100;
 
 	public static void main(String[] args) throws Exception {
